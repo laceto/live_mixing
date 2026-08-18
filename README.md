@@ -1,0 +1,59 @@
+# live_mixing
+
+Read, join, and export data from a [DJUCED](https://www.hercules.com/en-us/product/djuced/) DJ
+software SQLite database (`djuced.db`).
+
+## Install
+
+```
+pip install -e .
+```
+
+## Usage
+
+```python
+import live_mixing as lm
+
+tracks = lm.read_djuced_db()  # defaults to ~/Documents/DJUCED/djuced.db
+playlists = lm.read_djuced_playlists()
+playlist_tracks = lm.read_djuced_playlist_tracks()
+
+# Hot cues / beatgrid for one track
+cues = lm.read_track_cues(track_absolutepath="C:/path/to/track.mp3")
+beatgrid = lm.read_track_beatgrid(track_absolutepath="C:/path/to/track.mp3")
+
+# Reconstruct a DJ session (DJUCED has no play-log table — sessions are
+# inferred from tracks.last_played timestamps)
+sessions = lm.list_sessions()
+setlist = lm.export_session_setlist_csv(session_id=90)
+
+# Pair recorded mix audio files to a detected session
+matches = lm.match_recording_to_session()
+
+# Library maintenance
+missing = lm.find_missing_files()
+top = lm.top_played_tracks(n=20)
+```
+
+Every function accepts a `db_path` argument if your database isn't at the default location.
+
+Run `python scripts/demo.py` from the project root for a runnable walkthrough of the full API
+(writes its outputs to `data/`).
+
+## Project structure
+
+```
+live_mixing/
+├── live_mixing/
+│   ├── __init__.py            # public API re-exports
+│   └── read_djuced_db.py      # all read/export/session-reconstruction logic
+├── scripts/
+│   └── demo.py                # runnable demo of every function
+├── data/                       # generated CSV exports (gitignored)
+├── tests/
+│   └── test_read_djuced_db.py
+└── pyproject.toml
+```
+
+See `CLAUDE.md` for database schema notes, join-key conventions, and the reasoning behind the
+session-reconstruction heuristics.

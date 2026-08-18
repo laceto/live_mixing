@@ -4,21 +4,21 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A single-module Python toolkit (`read_djuced_db.py`) for reading and exporting data from a DJUCED DJ
-software SQLite database (`djuced.db`, default location `~/Documents/DJUCED/djuced.db`, overridable via
-the `db_path` arg on every function). There is no package structure, test suite, or dependency manifest —
-just the one file. The only third-party dependency is `pandas`; `sqlite3` and `pathlib` are stdlib.
+An installable Python package (`live_mixing`) for reading and exporting data from a DJUCED DJ software
+SQLite database (`djuced.db`, default location `~/Documents/DJUCED/djuced.db`, overridable via the
+`db_path` arg on every function). All logic lives in one module, `live_mixing/read_djuced_db.py`; the
+package `__init__.py` re-exports every public function. The only third-party dependency is `pandas`;
+`sqlite3`, `pathlib`, and `re` are stdlib.
 
 ## Running
 
 ```
-python read_djuced_db.py
+pip install -e .
+python scripts/demo.py    # runnable demo of every public function; writes CSVs to data/
+pytest -q                 # smoke tests (no real djuced.db required)
 ```
 
-Runs the `__main__` block, which calls every public function in sequence as a smoke test/demo and writes
-several CSV artifacts to the working directory (`tracks_export.csv`, `playlists_export.csv`,
-`sessions_export.csv`, `setlist_*.csv`). There is no test framework, linter, or build step configured —
-don't invent commands for these.
+There is no linter or CI configured — don't invent commands for these.
 
 ## Database shape
 
@@ -36,7 +36,7 @@ don't invent commands for these.
 **Join key convention**: `tracks.absolutepath` is the join key everywhere — `playlists2.data`,
 `trackCues.trackId`, and `trackBeats.trackId` all match against it directly (not against `tracks.id`).
 
-## Core patterns in `read_djuced_db.py`
+## Core patterns in `live_mixing/read_djuced_db.py`
 
 - `read_djuced_db(db_path, table="tracks", query=None)` is the base helper every other `read_*` function
   goes through — either pass `table` for a plain `SELECT *`, or `query` for custom SQL.

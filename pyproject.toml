@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "live_mixing"
+version = "0.1.0"
+description = "Read, join, and export data from a DJUCED DJ software SQLite database"
+requires-python = ">=3.9"
+dependencies = [
+    "pandas>=2.3",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov", "mypy", "ruff"]
+
+[tool.setuptools.packages.find]
+include = ["live_mixing*"]
