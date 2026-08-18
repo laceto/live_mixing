@@ -39,6 +39,9 @@ tracks = lm.read_djuced_db()  # defaults to ~/Documents/DJUCED/djuced.db
 playlists = lm.read_djuced_playlists()
 playlist_tracks = lm.read_djuced_playlist_tracks()
 
+# What's playing right now (the most-recently-played track)
+now_playing = lm.current_track()
+
 # Hot cues / beatgrid for one track
 cues = lm.read_track_cues(track_absolutepath="C:/path/to/track.mp3")
 beatgrid = lm.read_track_beatgrid(track_absolutepath="C:/path/to/track.mp3")

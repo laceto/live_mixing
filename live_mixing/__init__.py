@@ -1,5 +1,6 @@
 from .read_djuced_db import (
     DEFAULT_DB_PATH,
+    current_track,
     export_playlists_csv,
     export_session_setlist_csv,
     export_sessions_csv,
@@ -20,6 +21,7 @@ from .read_djuced_db import (
 
 __all__ = [
     "DEFAULT_DB_PATH",
+    "current_track",
     "export_playlists_csv",
     "export_session_setlist_csv",
     "export_sessions_csv",

@@ -168,6 +168,32 @@ def read_djuced_session(db_path=DEFAULT_DB_PATH, start=None, end=None):
         return pd.read_sql_query(query, conn, params=params)
 
 
+def current_track(db_path=DEFAULT_DB_PATH):
+    """Return the single most-recently-played track — "what's playing right now".
+
+    Same query pattern used by external now-playing pollers (e.g. unbox's DJUCED integration):
+    the track with the latest tracks.last_played, since DJUCED has no dedicated "now playing"
+    state.
+
+    Args:
+        db_path: path to djuced.db.
+
+    Returns:
+        pandas.DataFrame with 0 or 1 rows (artist, title, bpm, key, genre, last_played,
+        absolutepath). Empty if no track has ever been played.
+    """
+    return read_djuced_db(
+        db_path,
+        query="""
+            SELECT artist, title, bpm, key, genre, last_played, absolutepath
+            FROM tracks
+            WHERE last_played IS NOT NULL
+            ORDER BY last_played DESC
+            LIMIT 1
+        """,
+    )
+
+
 def list_sessions(db_path=DEFAULT_DB_PATH, gap_minutes=15):
     """Auto-detect DJ session boundaries across the whole play history.
 

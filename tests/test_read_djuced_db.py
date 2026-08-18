@@ -36,6 +36,52 @@ def _make_tracks_db(db_path, rows):
     conn.close()
 
 
+def _make_full_tracks_db(db_path, rows):
+    """rows: list of (id, artist, title, bpm, key, genre, last_played)."""
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        "CREATE TABLE tracks (id INTEGER PRIMARY KEY, artist TEXT, title TEXT, "
+        "bpm REAL, key INTEGER, genre TEXT, last_played TEXT, absolutepath TEXT)"
+    )
+    conn.executemany(
+        "INSERT INTO tracks (id, artist, title, bpm, key, genre, last_played) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        rows,
+    )
+    conn.commit()
+    conn.close()
+
+
+def test_current_track_returns_most_recently_played(tmp_path):
+    db_path = tmp_path / "djuced.db"
+    _make_full_tracks_db(
+        db_path,
+        [
+            (1, "Artist A", "Track A", 120.0, 5, "Techno", "2026-08-15T14:00:00"),
+            (2, "Artist B", "Track B", 128.0, 8, "House", "2026-08-15T16:00:00"),
+            (3, "Artist C", "Track C", 126.0, 3, "Techno", None),
+        ],
+    )
+
+    result = live_mixing.current_track(db_path=db_path)
+
+    assert len(result) == 1
+    assert result.iloc[0]["artist"] == "Artist B"
+    assert result.iloc[0]["title"] == "Track B"
+
+
+def test_current_track_empty_when_nothing_played(tmp_path):
+    db_path = tmp_path / "djuced.db"
+    _make_full_tracks_db(
+        db_path,
+        [(1, "Artist A", "Track A", 120.0, 5, "Techno", None)],
+    )
+
+    result = live_mixing.current_track(db_path=db_path)
+
+    assert result.empty
+
+
 def _set_playcount(db_path, track_id, playcount):
     conn = sqlite3.connect(db_path)
     conn.execute("UPDATE tracks SET playcount = ? WHERE id = ?", (playcount, track_id))

@@ -21,6 +21,12 @@ Every function takes `db_path` (default `DEFAULT_DB_PATH` = `~/Documents/DJUCED/
 - `read_track_beatgrid(db_path=DEFAULT_DB_PATH, track_absolutepath=None)` — beatgrid data from
   `trackBeats` joined to `tracks`. `beatpos` is raw bytes (packed blob, size varies per track).
 
+## Now playing
+
+- `current_track(db_path=DEFAULT_DB_PATH)` — the single most-recently-played track (by
+  `last_played`). Returns a DataFrame with 0 or 1 rows (empty if no track has ever been played).
+  Same query pattern used by external now-playing pollers (e.g. unbox's DJUCED integration).
+
 ## Session reconstruction (see `docs/architecture.md` for the heuristic reasoning)
 
 - `read_djuced_session(db_path=DEFAULT_DB_PATH, start=None, end=None)` — tracks played in
