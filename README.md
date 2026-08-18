@@ -9,6 +9,27 @@ software SQLite database (`djuced.db`).
 pip install -e .
 ```
 
+## After each session
+
+Run this **once, right after you finish mixing, before starting a new session** (even casual
+library browsing that might replay a track):
+
+```python
+import live_mixing as lm
+
+new_events = lm.snapshot_play_log(log_dir="play_log")
+```
+
+**Why**: DJUCED has no play-log table — `tracks.last_played` only ever stores the *most recent*
+play per track. If you replay a track later, its earlier session's timestamp is silently
+overwritten and becomes unrecoverable from `djuced.db` alone, which makes `list_sessions()` and
+`read_djuced_session()` miss it retroactively. `snapshot_play_log()` works around this by diffing
+`playcount` against the last snapshot in `log_dir` and appending any newly detected plays to an
+append-only `play_events.csv` — once a play is logged there, a later replay can no longer erase
+it. Pick one `log_dir` and reuse it every time; the shorter the gap between calls, the more
+precisely each detected play can be attributed to a specific session. See `docs/architecture.md`
+for the full design rationale.
+
 ## Usage
 
 ```python
@@ -30,9 +51,7 @@ setlist = lm.export_session_setlist_csv(session_id=90)
 # Pair recorded mix audio files to a detected session
 matches = lm.match_recording_to_session()
 
-# Track plays permanently, even across tracks getting replayed later (works around
-# last_played only ever holding the most recent play — see docs/architecture.md).
-# Call this once right after each session, before starting a new one.
+# Track plays permanently across replays — see "After each session" above
 new_events = lm.snapshot_play_log(log_dir="play_log")
 
 # Library maintenance
