@@ -188,3 +188,45 @@ def test_snapshot_play_log_handles_new_and_removed_tracks(tmp_path):
     assert events.empty  # new track has no prior baseline to diff against
     state = pd.read_csv(log_dir / "play_log_state.csv")
     assert sorted(state["id"]) == [1, 3]  # track 2 dropped, track 3 baselined
+
+
+def _make_tracks_and_cues_db(db_path, cue_rows):
+    """cue_rows: list of (trackId, cuename, cuenumber, cuepos, loopLength, cueColor, isSavedLoop)."""
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        "CREATE TABLE tracks (id INTEGER PRIMARY KEY, artist TEXT, title TEXT, absolutepath TEXT)"
+    )
+    conn.execute(
+        "INSERT INTO tracks (id, artist, title, absolutepath) VALUES (1, 'Artist A', 'Track A', '/a.mp3')"
+    )
+    conn.execute(
+        "CREATE TABLE trackCues (id INTEGER PRIMARY KEY, trackId TEXT, cuename TEXT, "
+        "cuenumber INTEGER, cuepos REAL, loopLength REAL, cueColor INTEGER, isSavedLoop INTEGER)"
+    )
+    conn.executemany(
+        "INSERT INTO trackCues (trackId, cuename, cuenumber, cuepos, loopLength, cueColor, isSavedLoop) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+        cue_rows,
+    )
+    conn.commit()
+    conn.close()
+
+
+def test_read_track_cues_excludes_structure_markers_by_default(tmp_path):
+    db_path = tmp_path / "djuced.db"
+    _make_tracks_and_cues_db(
+        db_path,
+        [
+            ("/a.mp3", "Cue 0", 0, 0.5, 0, 4, 0),      # real: memory cue
+            ("/a.mp3", "Cue 1", 1, 10.0, 0, 4, 0),     # real: hot cue pad 1
+            ("/a.mp3", "9", 1000, 20.0, 0, 4, 0),      # auto structure marker
+            ("/a.mp3", "12", 1007, 90.0, 0, 4, 0),     # auto structure marker
+        ],
+    )
+
+    real_only = live_mixing.read_track_cues(db_path=db_path)
+    assert len(real_only) == 2
+    assert sorted(real_only["cuenumber"]) == [0, 1]
+
+    everything = live_mixing.read_track_cues(db_path=db_path, include_structure_markers=True)
+    assert len(everything) == 4

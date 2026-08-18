@@ -63,15 +63,27 @@ def read_djuced_playlist_tracks(db_path=DEFAULT_DB_PATH):
     return read_djuced_db(db_path, query=query)
 
 
-def read_track_cues(db_path=DEFAULT_DB_PATH, track_absolutepath=None):
+def read_track_cues(db_path=DEFAULT_DB_PATH, track_absolutepath=None, include_structure_markers=False):
     """Read hot cues / saved loops from trackCues, joined with track info.
 
-    `trackCues.trackId` matches `tracks.absolutepath`.
+    `trackCues.trackId` matches `tracks.absolutepath`. `cuenumber` covers two
+    unrelated ranges that must not be conflated (confirmed against this
+    package's real data, cross-checked with
+    https://github.com/binomed/DjucedToRekordBoxXML's independent
+    reverse-engineering of the same schema): `0..8` are real cue points a DJ
+    actually placed (`0` = memory/main cue, `1..8` = hot cue pads 1-8), while
+    `1000+` are DJUCED's own auto-detected track-structure markers — not
+    something a user placed, and the overwhelming majority of rows in this
+    table (91% in this package's own library: 9,598 of 10,542). By default
+    those are filtered out so this function returns only real cues.
 
     Args:
         db_path: path to djuced.db.
         track_absolutepath: if given, restrict to this one track (its
             `absolutepath`). If None (default), return cues for all tracks.
+        include_structure_markers: if True, also include the `cuenumber>=1000`
+            auto-detected structure markers. Default False — most callers want
+            only real cues.
 
     Returns:
         pandas.DataFrame with artist, title, cuename, cuenumber, cuepos,
@@ -83,10 +95,15 @@ def read_track_cues(db_path=DEFAULT_DB_PATH, track_absolutepath=None):
         FROM trackCues AS c
         JOIN tracks AS t ON t.absolutepath = c.trackId
     """
+    conditions = []
     params = []
     if track_absolutepath is not None:
-        query += " WHERE t.absolutepath = ?"
+        conditions.append("t.absolutepath = ?")
         params.append(track_absolutepath)
+    if not include_structure_markers:
+        conditions.append("c.cuenumber < 1000")
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
     query += " ORDER BY t.artist, t.title, c.cuenumber"
 
     db_path = Path(db_path)

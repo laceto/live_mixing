@@ -16,8 +16,11 @@ Every function takes `db_path` (default `DEFAULT_DB_PATH` = `~/Documents/DJUCED/
 - `read_djuced_playlists(db_path=DEFAULT_DB_PATH)` — raw `playlists2` table.
 - `read_djuced_playlist_tracks(db_path=DEFAULT_DB_PATH)` — `playlists2` (type=3) joined to `tracks`,
   one row per (playlist, track).
-- `read_track_cues(db_path=DEFAULT_DB_PATH, track_absolutepath=None)` — hot cues/loops from
-  `trackCues` joined to `tracks`. Restrict to one track via `track_absolutepath`.
+- `read_track_cues(db_path=DEFAULT_DB_PATH, track_absolutepath=None, include_structure_markers=False)`
+  — real hot cues/loops from `trackCues` joined to `tracks`, filtered to `cuenumber < 1000` by
+  default (see `docs/schemas.md` — most `trackCues` rows are auto-detected structure markers, not
+  real cues). Restrict to one track via `track_absolutepath`; pass
+  `include_structure_markers=True` to get the unfiltered table.
 - `read_track_beatgrid(db_path=DEFAULT_DB_PATH, track_absolutepath=None)` — beatgrid data from
   `trackBeats` joined to `tracks`. `beatpos` is raw bytes (packed blob, size varies per track).
 
