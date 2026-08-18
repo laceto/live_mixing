@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+
+# generated exports (regenerate via read_djuced_db.py)
+*_export.csv
+setlist_*.csv
+sessions_export.csv
+
+.claude/settings.local.json
+
+.venv/
+venv/
+*.egg-info/
+build/
+dist/
