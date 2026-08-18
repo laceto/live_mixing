@@ -31,6 +31,15 @@ Every function takes `db_path` (default `DEFAULT_DB_PATH` = `~/Documents/DJUCED/
   — pairs `recordings` rows to detected sessions. Returns per-recording match info including
   `match` (bool) and `ambiguous` (bool).
 
+## Play-log tracking (see `docs/architecture.md` for the design rationale)
+
+- `snapshot_play_log(log_dir, db_path=DEFAULT_DB_PATH)` — diffs the current `tracks` table
+  against the previous snapshot in `log_dir`, appends any newly detected plays to
+  `log_dir/play_events.csv`, and updates `log_dir/play_log_state.csv` for the next call. Returns
+  the newly appended events as a DataFrame (empty on the first call or if nothing changed). Call
+  it right after each session, before starting a new one — it's the workaround for
+  `last_played` only ever holding the *most recent* play per track.
+
 ## Library maintenance
 
 - `find_missing_files(db_path=DEFAULT_DB_PATH)` — tracks whose `absolutepath` no longer exists on

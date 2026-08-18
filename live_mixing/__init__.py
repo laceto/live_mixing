@@ -14,6 +14,7 @@ from .read_djuced_db import (
     read_djuced_session,
     read_track_beatgrid,
     read_track_cues,
+    snapshot_play_log,
     top_played_tracks,
 )
 
@@ -33,5 +34,6 @@ __all__ = [
     "read_djuced_session",
     "read_track_beatgrid",
     "read_track_cues",
+    "snapshot_play_log",
     "top_played_tracks",
 ]

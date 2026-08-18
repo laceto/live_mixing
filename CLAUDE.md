@@ -22,9 +22,10 @@ session match, etc.)
 → ALSO READ: `docs/architecture.md` for the session-reconstruction heuristics
 
 **DATA / QUERY / EXPORT** — exploring the database, running the demo, calling the public API,
-exporting CSVs
+exporting CSVs, tracking plays over time (`snapshot_play_log`)
 → READ: `docs/api-reference.md`
-→ ALSO READ: `docs/schemas.md` for table shapes; `docs/scripts-reference.md` for how to run things
+→ ALSO READ: `docs/schemas.md` for table shapes; `docs/scripts-reference.md` for how to run things;
+`docs/architecture.md` if touching `snapshot_play_log`
 
 ## Repo Layout
 

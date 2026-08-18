@@ -24,3 +24,7 @@ Known gotchas, in order of how likely you are to hit them:
 - **`FileNotFoundError: DJUCED database not found`** — expected behavior when `db_path` doesn't
   exist; every read function checks this explicitly before connecting. Verify the path, don't
   suppress the check.
+- **`snapshot_play_log()` events look "missing" or undercounted** — a track played more than once
+  between two snapshot calls collapses into a single event with `playcount_delta > 1`; it does not
+  split into separate timestamped events. This isn't a bug — snapshot more often (e.g. right after
+  every session) for finer granularity. See `docs/architecture.md`.

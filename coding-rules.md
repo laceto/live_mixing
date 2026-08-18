@@ -15,6 +15,10 @@
 - Keep `db_path` (or `csv_path`) as the parameter with the `DEFAULT_DB_PATH` keyword default on new
   functions, consistent with the rest of the module — but note the existing inconsistency in
   argument *order* documented in `docs/api-reference.md`; don't "fix" it as a drive-by change.
-- If you touch `list_sessions()` or `match_recording_to_session()`, read `docs/architecture.md`
-  first — both encode heuristics that were empirically tuned against real failure modes, not
-  arbitrary defaults.
+- If you touch `list_sessions()`, `match_recording_to_session()`, or `snapshot_play_log()`, read
+  `docs/architecture.md` first — all three encode heuristics/tradeoffs tuned against real failure
+  modes, not arbitrary defaults.
+- Functions that persist their own state outside `djuced.db` (currently just `snapshot_play_log`)
+  should degrade quietly on data anomalies (e.g. a playcount decrease from a db reset) rather than
+  raising — consistent with how the rest of the module handles unknown tracks/paths. Only raise for
+  genuine usage mistakes (missing `db_path`), not for data the source system itself produced.

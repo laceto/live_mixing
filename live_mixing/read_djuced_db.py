@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -464,3 +465,96 @@ def export_sessions_csv(csv_path, db_path=DEFAULT_DB_PATH, gap_minutes=15):
     sessions = list_sessions(db_path, gap_minutes=gap_minutes)
     sessions.to_csv(csv_path, index=False)
     return sessions
+
+
+_PLAY_LOG_STATE_COLUMNS = ["id", "artist", "title", "absolutepath", "last_played", "playcount"]
+_PLAY_EVENT_COLUMNS = [
+    "event_detected_at",
+    "id",
+    "artist",
+    "title",
+    "absolutepath",
+    "playcount_before",
+    "playcount_after",
+    "playcount_delta",
+    "last_played",
+]
+
+
+def snapshot_play_log(log_dir, db_path=DEFAULT_DB_PATH):
+    """Snapshot tracks.playcount/last_played and log plays detected since the last snapshot.
+
+    Works around DJUCED storing only the *most recent* last_played per track (see
+    docs/architecture.md): each call diffs the current tracks table against the state saved by
+    the previous call, and appends any newly detected plays to an append-only event log. Once a
+    play is appended it survives even if the same track is replayed later and its last_played
+    timestamp is overwritten in djuced.db.
+
+    Call this right after finishing a session, before starting a new one, so the diff window is
+    small and each detected play is attributable to a specific session.
+
+    Args:
+        log_dir: directory holding `play_log_state.csv` (last snapshot) and `play_events.csv`
+            (append-only log). Created if it doesn't exist.
+        db_path: path to djuced.db.
+
+    Returns:
+        pandas.DataFrame of newly detected play events (same columns as `play_events.csv`).
+        Empty (but correctly columned) on the first snapshot, or if nothing changed.
+
+    Notes:
+        - A track with a higher playcount than last snapshot is logged as one event, with
+          `playcount_delta` = the increase. Multiple plays between two snapshots collapse into a
+          single event — snapshot more often (e.g. after every session) for finer granularity.
+        - A track with a *lower* playcount than last snapshot (db reset/restore) is rebaselined
+          silently, no event is fabricated — consistent with this module's existing "degrade
+          quietly on data anomalies" behavior (see docs/architecture.md).
+        - A track not seen in the previous snapshot is baselined with no event: there's no prior
+          state to diff it against, so no play can be attributed here.
+        - A track present in the previous snapshot but missing now (removed from the library) is
+          dropped from the state; nothing is logged for it.
+    """
+    log_dir = Path(log_dir)
+    log_dir.mkdir(parents=True, exist_ok=True)
+    state_path = log_dir / "play_log_state.csv"
+    events_path = log_dir / "play_events.csv"
+
+    current = read_djuced_db(
+        db_path,
+        query="SELECT id, artist, title, absolutepath, last_played, playcount FROM tracks",
+    )
+
+    if not state_path.exists():
+        current.to_csv(state_path, index=False)
+        return pd.DataFrame(columns=_PLAY_EVENT_COLUMNS)
+
+    previous = pd.read_csv(state_path)
+    merged = current.merge(
+        previous[["id", "playcount"]],
+        on="id",
+        how="left",
+        suffixes=("", "_previous"),
+    )
+    played_since = merged[merged["playcount"] > merged["playcount_previous"]]
+
+    if played_since.empty:
+        events = pd.DataFrame(columns=_PLAY_EVENT_COLUMNS)
+    else:
+        detected_at = datetime.now().isoformat(timespec="seconds")
+        events = pd.DataFrame(
+            {
+                "event_detected_at": detected_at,
+                "id": played_since["id"],
+                "artist": played_since["artist"],
+                "title": played_since["title"],
+                "absolutepath": played_since["absolutepath"],
+                "playcount_before": played_since["playcount_previous"].astype(int),
+                "playcount_after": played_since["playcount"],
+                "playcount_delta": played_since["playcount"] - played_since["playcount_previous"],
+                "last_played": played_since["last_played"],
+            }
+        )
+        events.to_csv(events_path, mode="a", index=False, header=not events_path.exists())
+
+    current.to_csv(state_path, index=False)
+    return events.reset_index(drop=True)

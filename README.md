@@ -30,6 +30,11 @@ setlist = lm.export_session_setlist_csv(session_id=90)
 # Pair recorded mix audio files to a detected session
 matches = lm.match_recording_to_session()
 
+# Track plays permanently, even across tracks getting replayed later (works around
+# last_played only ever holding the most recent play — see docs/architecture.md).
+# Call this once right after each session, before starting a new one.
+new_events = lm.snapshot_play_log(log_dir="play_log")
+
 # Library maintenance
 missing = lm.find_missing_files()
 top = lm.top_played_tracks(n=20)
