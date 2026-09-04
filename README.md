@@ -30,6 +30,25 @@ it. Pick one `log_dir` and reuse it every time; the shorter the gap between call
 precisely each detected play can be attributed to a specific session. See `docs/architecture.md`
 for the full design rationale.
 
+Then export and publish that session's tracklist to GitHub:
+
+```python
+sessions = lm.list_sessions()
+last = sessions.iloc[-1]
+lm.export_session_setlist_csv(session_id=int(last["session_id"]))
+```
+
+```
+git add data/setlist_session_<id>_<date>.csv
+git commit -m "chore(data): commit setlist for session <id> (<date>)"
+git push
+```
+
+**Why**: every DJ set's tracklist is meant to be visible on GitHub, not just kept locally.
+`data/*.csv` exports are gitignored by default (they're reproducible from `djuced.db`), except
+`data/setlist_session_*.csv` — `.gitignore` carves out an explicit exception for that filename
+pattern so session setlists are tracked and pushed every time.
+
 ## Usage
 
 ```python
@@ -76,7 +95,7 @@ live_mixing/
 │   └── read_djuced_db.py      # all read/export/session-reconstruction logic
 ├── scripts/
 │   └── demo.py                # runnable demo of every function
-├── data/                       # generated CSV exports (gitignored)
+├── data/                       # generated CSV exports (gitignored, except setlist_session_*.csv)
 ├── tests/
 │   └── test_read_djuced_db.py
 └── pyproject.toml

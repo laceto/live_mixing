@@ -33,7 +33,7 @@ exporting CSVs, tracking plays over time (`snapshot_play_log`)
 live_mixing/       package: read_djuced_db.py (all logic) + __init__.py (public re-exports)
 scripts/           demo.py — runnable walkthrough of every public function
 tests/             pytest smoke tests (no real djuced.db required)
-data/              generated CSV exports (gitignored)
+data/              generated CSV exports (gitignored, except setlist_session_*.csv — tracked)
 docs/              reference docs — see table below
 ```
 

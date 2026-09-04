@@ -4,6 +4,9 @@ __pycache__/
 # generated exports (regenerate via scripts/demo.py or live_mixing.export_*)
 data/*.csv
 
+# exception: every DJ set's tracklist is committed and pushed to GitHub
+!data/setlist_session_*.csv
+
 .claude/settings.local.json
 
 .venv/
