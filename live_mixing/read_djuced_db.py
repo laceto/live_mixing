@@ -63,6 +63,52 @@ def read_djuced_playlist_tracks(db_path=DEFAULT_DB_PATH):
     return read_djuced_db(db_path, query=query)
 
 
+def create_playlist(name, absolutepaths, db_path=DEFAULT_DB_PATH):
+    """Create a new DJUCED playlist from a list of track paths.
+
+    Inserts a type=0 header row into playlists2, followed by one type=3 row
+    per track (path='#', data=absolutepath), following the same
+    order_in_list convention DJUCED itself uses: header rows are numbered
+    across all playlists (next value after the current max), while each
+    playlist's own tracks are numbered 1..N independently. DJUCED must be
+    closed before calling this — the app holds an exclusive lock on
+    djuced.db while running.
+
+    Args:
+        name: playlist name; must not already exist in playlists2.
+        absolutepaths: list of tracks.absolutepath values, in playlist order.
+        db_path: path to djuced.db.
+
+    Raises:
+        FileNotFoundError: if db_path doesn't exist.
+        ValueError: if name already exists as a playlist, or absolutepaths is empty.
+    """
+    db_path = Path(db_path)
+    if not db_path.exists():
+        raise FileNotFoundError(f"DJUCED database not found: {db_path}")
+    if not absolutepaths:
+        raise ValueError("absolutepaths must not be empty")
+
+    with sqlite3.connect(db_path) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM playlists2 WHERE type = 0 AND name = ?", (name,))
+        if cur.fetchone() is not None:
+            raise ValueError(f"playlist {name!r} already exists")
+
+        next_header_order = (
+            cur.execute("SELECT MAX(order_in_list) FROM playlists2 WHERE type = 0").fetchone()[0] or 0
+        ) + 1
+        cur.execute(
+            "INSERT INTO playlists2 (name, path, data, order_in_list, type) VALUES (?, '#', '', ?, 0)",
+            (name, next_header_order),
+        )
+        cur.executemany(
+            "INSERT INTO playlists2 (name, path, data, order_in_list, type) VALUES (?, '#', ?, ?, 3)",
+            [(name, path, i) for i, path in enumerate(absolutepaths, start=1)],
+        )
+        conn.commit()
+
+
 def read_track_cues(db_path=DEFAULT_DB_PATH, track_absolutepath=None, include_structure_markers=False):
     """Read hot cues / saved loops from trackCues, joined with track info.
 

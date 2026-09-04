@@ -230,3 +230,65 @@ def test_read_track_cues_excludes_structure_markers_by_default(tmp_path):
 
     everything = live_mixing.read_track_cues(db_path=db_path, include_structure_markers=True)
     assert len(everything) == 4
+
+
+def _make_playlists_db(db_path, header_rows=()):
+    """header_rows: list of (name, order_in_list) existing type=0 playlists."""
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        "CREATE TABLE playlists2 (name TEXT, path TEXT, data TEXT, "
+        "order_in_list INTEGER, type INTEGER)"
+    )
+    conn.executemany(
+        "INSERT INTO playlists2 (name, path, data, order_in_list, type) "
+        "VALUES (?, '#', '', ?, 0)",
+        header_rows,
+    )
+    conn.commit()
+    conn.close()
+
+
+def test_create_playlist_inserts_header_and_track_rows(tmp_path):
+    db_path = tmp_path / "djuced.db"
+    _make_playlists_db(db_path, header_rows=[("acid", 1), ("dark", 2)])
+
+    live_mixing.create_playlist(
+        "session_113", ["/a.mp3", "/b.mp3", "/c.mp3"], db_path=db_path
+    )
+
+    result = live_mixing.read_djuced_playlists(db_path=db_path)
+    header = result[(result["type"] == 0) & (result["name"] == "session_113")]
+    assert len(header) == 1
+    assert header.iloc[0]["order_in_list"] == 3  # next after existing max (2)
+
+    tracks = result[(result["type"] == 3) & (result["name"] == "session_113")]
+    tracks = tracks.sort_values("order_in_list")
+    assert tracks["data"].tolist() == ["/a.mp3", "/b.mp3", "/c.mp3"]
+    assert tracks["order_in_list"].tolist() == [1, 2, 3]
+
+
+def test_create_playlist_first_playlist_in_empty_db(tmp_path):
+    db_path = tmp_path / "djuced.db"
+    _make_playlists_db(db_path)
+
+    live_mixing.create_playlist("session_113", ["/a.mp3"], db_path=db_path)
+
+    result = live_mixing.read_djuced_playlists(db_path=db_path)
+    header = result[result["type"] == 0]
+    assert header.iloc[0]["order_in_list"] == 1
+
+
+def test_create_playlist_duplicate_name_raises(tmp_path):
+    db_path = tmp_path / "djuced.db"
+    _make_playlists_db(db_path, header_rows=[("acid", 1)])
+
+    with pytest.raises(ValueError):
+        live_mixing.create_playlist("acid", ["/a.mp3"], db_path=db_path)
+
+
+def test_create_playlist_empty_tracks_raises(tmp_path):
+    db_path = tmp_path / "djuced.db"
+    _make_playlists_db(db_path)
+
+    with pytest.raises(ValueError):
+        live_mixing.create_playlist("session_113", [], db_path=db_path)
