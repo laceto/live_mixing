@@ -1,3 +1,4 @@
+import re
 import sqlite3
 from datetime import datetime
 from pathlib import Path
@@ -63,6 +64,51 @@ def read_djuced_playlist_tracks(db_path=DEFAULT_DB_PATH):
     return read_djuced_db(db_path, query=query)
 
 
+def find_track_playlists(search, db_path=DEFAULT_DB_PATH):
+    """Find which playlist(s) contain tracks matching a search string.
+
+    `search` is tokenized on whitespace and separators ('-', '_'); every
+    non-empty token must match (case-insensitive substring) at least one of
+    the track's title, artist, albumartist, or filename — but different
+    tokens may match different fields, so free-text queries like
+    "lope - andy lee" match a track titled "Lope" by artist "Andy Lee" even
+    though no single field contains the whole string. Only playlists2 rows
+    with type == 3 hold a track reference, whose `data` column matches
+    `tracks.absolutepath` (see docs/schemas.md).
+
+    Args:
+        search: free-text query, matched token-by-token against
+            title/artist/albumartist/filename.
+        db_path: path to djuced.db.
+
+    Returns:
+        pandas.DataFrame with one row per (playlist, matching track): the
+        playlist's `name` and `order_in_list`, plus all columns from `tracks`.
+        Empty if no track matches.
+    """
+    tokens = [t for t in re.split(r"[\s\-_]+", search) if t]
+    if not tokens:
+        tokens = [search]
+
+    field_match = "(t.title LIKE ? OR t.artist LIKE ? OR t.albumartist LIKE ? OR t.filename LIKE ?)"
+    query = f"""
+        SELECT p.name AS playlist_name, p.order_in_list, t.*
+        FROM playlists2 AS p
+        JOIN tracks AS t ON t.absolutepath = p.data
+        WHERE p.type = 3
+          AND {" AND ".join([field_match] * len(tokens))}
+        ORDER BY p.name, p.order_in_list
+    """
+    params = [param for token in tokens for param in [f"%{token}%"] * 4]
+
+    db_path = Path(db_path)
+    if not db_path.exists():
+        raise FileNotFoundError(f"DJUCED database not found: {db_path}")
+
+    with sqlite3.connect(db_path) as conn:
+        return pd.read_sql_query(query, conn, params=params)
+
+
 def create_playlist(name, absolutepaths, db_path=DEFAULT_DB_PATH):
     """Create a new DJUCED playlist from a list of track paths.
 
@@ -105,6 +151,49 @@ def create_playlist(name, absolutepaths, db_path=DEFAULT_DB_PATH):
         cur.executemany(
             "INSERT INTO playlists2 (name, path, data, order_in_list, type) VALUES (?, '#', ?, ?, 3)",
             [(name, path, i) for i, path in enumerate(absolutepaths, start=1)],
+        )
+        conn.commit()
+
+
+def add_track_to_playlist(name, absolutepaths, db_path=DEFAULT_DB_PATH):
+    """Append tracks to an existing DJUCED playlist.
+
+    Inserts one type=3 row per track (path='#', data=absolutepath) into an
+    already-existing playlist, continuing that playlist's own order_in_list
+    numbering (independent per playlist, per docs/schemas.md) after its
+    current max. DJUCED must be closed before calling this — the app holds
+    an exclusive lock on djuced.db while running.
+
+    Args:
+        name: playlist name; must already exist in playlists2.
+        absolutepaths: list of tracks.absolutepath values, appended in order.
+        db_path: path to djuced.db.
+
+    Raises:
+        FileNotFoundError: if db_path doesn't exist.
+        ValueError: if name doesn't exist as a playlist, or absolutepaths is empty.
+    """
+    db_path = Path(db_path)
+    if not db_path.exists():
+        raise FileNotFoundError(f"DJUCED database not found: {db_path}")
+    if not absolutepaths:
+        raise ValueError("absolutepaths must not be empty")
+
+    with sqlite3.connect(db_path) as conn:
+        cur = conn.cursor()
+        cur.execute("SELECT 1 FROM playlists2 WHERE type = 0 AND name = ?", (name,))
+        if cur.fetchone() is None:
+            raise ValueError(f"playlist {name!r} does not exist")
+
+        next_track_order = (
+            cur.execute(
+                "SELECT MAX(order_in_list) FROM playlists2 WHERE type = 3 AND name = ?", (name,)
+            ).fetchone()[0]
+            or 0
+        ) + 1
+        cur.executemany(
+            "INSERT INTO playlists2 (name, path, data, order_in_list, type) VALUES (?, '#', ?, ?, 3)",
+            [(name, path, i) for i, path in enumerate(absolutepaths, start=next_track_order)],
         )
         conn.commit()
 
