@@ -6,6 +6,17 @@ Every function takes `db_path` (default `DEFAULT_DB_PATH` = `~/Documents/DJUCED/
 (most `read_*`/`export_*` functions take `db_path` first, but `export_*_csv` functions take
 `csv_path` first).
 
+## Optional: hybrid track search
+
+`live_mixing/search.py` — hybrid (BM25 + semantic) free-text track search, built on
+[`kitai`](https://github.com/laceto/kitai) and OpenAI's Batch API. Not part of the pandas-only
+core; not imported by `live_mixing/__init__.py`. Install with `pip install -e ".[search]"` plus
+`pip install git+https://github.com/laceto/kitai.git`, and set `OPENAI_API_KEY`. See the module
+docstring for the full pipeline (`build_track_documents` → `submit_embedding_job` →
+`fetch_embeddings` → `load_track_index` → `build_hybrid_retriever` → `search_tracks`) and its
+embedding cache (`EMBEDDING_CACHE_PATH`, default `data/track_embeddings_cache.csv`) that skips
+re-embedding tracks already indexed.
+
 ## Core reader
 
 - `read_djuced_db(db_path=DEFAULT_DB_PATH, table="tracks", query=None)` — base helper every other

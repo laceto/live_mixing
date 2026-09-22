@@ -4,8 +4,12 @@
 pip install -e .
 ```
 
-Installs `live_mixing` as an editable package. The only third-party dependency is `pandas`;
-`sqlite3`, `pathlib`, and `re` are stdlib.
+Installs `live_mixing` as an editable package. The only required third-party dependency is
+`pandas`; `sqlite3`, `pathlib`, and `re` are stdlib.
+
+Optional: `pip install -e ".[search]"` (plus `OPENAI_API_KEY`) adds `live_mixing/search.py`'s
+hybrid BM25+semantic track search — see `docs/api-reference.md`. Not required for anything else in
+this package.
 
 ## Demo
 
@@ -27,5 +31,8 @@ pytest -q
 Smoke tests only (`tests/test_read_djuced_db.py`) — they don't require a real `djuced.db`. They
 check the public API is importable, `read_djuced_db` raises `FileNotFoundError` for a missing db
 path, and `DEFAULT_DB_PATH` is configurable.
+
+`tests/test_search.py` covers `live_mixing/search.py`'s pure-logic corpus building (no network
+calls) and auto-skips via `pytest.importorskip` unless the `search` extra is installed.
 
 There is no linter or CI configured — don't invent commands for these.

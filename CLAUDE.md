@@ -1,9 +1,11 @@
 # live_mixing — Agent Router
 
 An installable Python package for reading and exporting data from a DJUCED DJ software SQLite
-database (`djuced.db`). All logic lives in one module, `live_mixing/read_djuced_db.py`; the only
-third-party dependency is `pandas`. This file routes you to the right context — load only what your
-task needs.
+database (`djuced.db`). Core logic lives in one module, `live_mixing/read_djuced_db.py`; its only
+required third-party dependency is `pandas`. An optional module, `live_mixing/search.py` (extra:
+`pip install -e ".[search]"`), adds hybrid BM25+semantic track search via `kitai` — it is never
+imported by `live_mixing/__init__.py`, so the pandas-only core is unaffected. This file routes you
+to the right context — load only what your task needs.
 
 ## Identify Your Task
 

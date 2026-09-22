@@ -65,6 +65,9 @@ now_playing = lm.current_track()
 cues = lm.read_track_cues(track_absolutepath="C:/path/to/track.mp3")
 beatgrid = lm.read_track_beatgrid(track_absolutepath="C:/path/to/track.mp3")
 
+# Which playlist(s) is a track in? (free-text, tokenized substring match)
+matches = lm.find_track_playlists("lope - andy lee")
+
 # Reconstruct a DJ session (DJUCED has no play-log table — sessions are
 # inferred from tracks.last_played timestamps)
 sessions = lm.list_sessions()
@@ -86,18 +89,49 @@ Every function accepts a `db_path` argument if your database isn't at the defaul
 Run `python scripts/demo.py` from the project root for a runnable walkthrough of the full API
 (writes its outputs to `data/`).
 
+## Optional: hybrid track search
+
+`live_mixing/search.py` adds free-text hybrid (BM25 + semantic) track search on top of
+[`kitai`](https://github.com/laceto/kitai) and OpenAI's Batch API — useful for fuzzy/typo-tolerant
+or vibe-based queries that `find_track_playlists`'s exact tokenized matching won't catch. It's
+fully optional and not imported by `live_mixing/__init__.py`:
+
+```
+pip install -e ".[search]"
+export OPENAI_API_KEY=...
+```
+
+```python
+from openai import OpenAI
+from live_mixing import search
+
+client = OpenAI()
+docs = search.build_track_documents()
+batch_id = search.submit_embedding_job(docs, client)  # None if everything's already cached
+if batch_id:
+    search.fetch_embeddings(client, batch_id)  # blocks until the batch job completes
+vs = search.load_track_index(docs, client)
+retriever = search.build_hybrid_retriever(vs, docs)
+search.search_tracks("lope - andy lee", retriever)
+```
+
+See the module docstring for the full pipeline and its embedding cache
+(`data/track_embeddings_cache.csv`), which skips re-embedding tracks already indexed.
+
 ## Project structure
 
 ```
 live_mixing/
 ├── live_mixing/
-│   ├── __init__.py            # public API re-exports
-│   └── read_djuced_db.py      # all read/export/session-reconstruction logic
+│   ├── __init__.py            # public API re-exports (pandas-only core)
+│   ├── read_djuced_db.py      # all read/export/session-reconstruction logic
+│   └── search.py              # optional hybrid track search (kitai + OpenAI, not in __init__)
 ├── scripts/
 │   └── demo.py                # runnable demo of every function
 ├── data/                       # generated CSV exports (gitignored, except setlist_session_*.csv)
 ├── tests/
-│   └── test_read_djuced_db.py
+│   ├── test_read_djuced_db.py
+│   └── test_search.py         # skipped unless the `search` extra is installed
 └── pyproject.toml
 ```
 
