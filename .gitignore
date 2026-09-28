@@ -9,6 +9,9 @@ data/*.csv
 
 .claude/settings.local.json
 
+# secrets (OPENAI_API_KEY for live_mixing.playlist_analysis / search)
+.env
+
 .venv/
 venv/
 *.egg-info/

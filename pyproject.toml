@@ -26,5 +26,8 @@ search = [
     "kitai @ git+https://github.com/laceto/kitai.git",
 ]
 
+# live_mixing/playlist_analysis.py — OpenAI playlist journey / set-order analysis.
+analysis = ["openai>=1.0"]
+
 [tool.setuptools.packages.find]
 include = ["live_mixing*"]

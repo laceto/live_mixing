@@ -17,6 +17,31 @@ docstring for the full pipeline (`build_track_documents` → `submit_embedding_j
 embedding cache (`EMBEDDING_CACHE_PATH`, default `data/track_embeddings_cache.csv`) that skips
 re-embedding tracks already indexed.
 
+## Optional: OpenAI playlist analysis
+
+`live_mixing/playlist_analysis.py` — sends a playlist to OpenAI and asks for the overall journey
+and a DJ-set order. Not part of the core; not imported by `live_mixing/__init__.py`
+(`from live_mixing import playlist_analysis`). Install with `pip install -e ".[analysis]"` and set
+`OPENAI_API_KEY` in the environment or in a `.env` file (gitignored) in the current directory or
+repo root — `.env` is read only when `analyze_playlist()` creates its own client, never at import,
+and never overrides variables already set.
+
+- `load_env_file(path=None)` — loads `KEY=VALUE` lines from `.env` into `os.environ` (no override;
+  handles comments, `export `, quotes). Returns the names of newly set variables, never values.
+
+- `read_playlist_file(path="data/now_playing.txt")` — parses `Artist,Title,1` lines into a
+  DataFrame (`artist`, `title`); titles may contain commas.
+- `analyze_playlist(tracks=None, client=None, model="gpt-4.1-mini", context=<minimal-era 2004-2012>, temperature=0.2)` —
+  `tracks` is a DataFrame (`artist`, `title`) or a file path (default `data/now_playing.txt`).
+  Returns a dict: `journey` (str), `set_order` (DataFrame: `phase`, `position`, `artist`, `title`,
+  `known`, `reason`, ordered warm_up → building → peak → breakdown) and `unassigned` (tracks the
+  model left out). The model answers with track *numbers*, so it can't invent tracks. The prompt
+  lets the model make a best-effort inference about tracks it doesn't recognise but requires it to
+  say so and never to invent specifics (label, year, BPM, key): each track comes back with `known`
+  (True only if the model says it recognises that exact record); unknown tracks get a reason
+  starting "Not known - inferred: ". `known` is the model's self-report, not something verified. Raises `ValueError` on an
+  empty playlist, `FileNotFoundError` on a missing file. Sends the track list to OpenAI.
+
 ## Core reader
 
 - `read_djuced_db(db_path=DEFAULT_DB_PATH, table="tracks", query=None)` — base helper every other
