@@ -1,4 +1,6 @@
 import sqlite3
+import subprocess
+import sys
 
 import pandas as pd
 import pytest
@@ -80,6 +82,48 @@ def test_current_track_empty_when_nothing_played(tmp_path):
     result = live_mixing.current_track(db_path=db_path)
 
     assert result.empty
+
+
+def test_windows_now_playing_non_windows_raises(monkeypatch):
+    monkeypatch.setattr(sys, "platform", "linux")
+    with pytest.raises(RuntimeError):
+        live_mixing.windows_now_playing()
+
+
+def _fake_smtc(monkeypatch, stdout, returncode=0, stderr=b""):
+    monkeypatch.setattr(sys, "platform", "win32")
+    monkeypatch.setattr(
+        subprocess,
+        "run",
+        lambda *a, **k: subprocess.CompletedProcess(a, returncode, stdout, stderr),
+    )
+
+
+def test_windows_now_playing_filters_playing(monkeypatch):
+    payload = (
+        b'[{"source":"app1","status":"Playing","artist":"A","title":"T1","album":""},'
+        b'{"source":"app2","status":"Paused","artist":"B","title":"T2","album":""}]'
+    )
+    _fake_smtc(monkeypatch, payload)
+
+    playing = live_mixing.windows_now_playing()
+    everything = live_mixing.windows_now_playing(playing_only=False)
+
+    assert list(playing["title"]) == ["T1"]
+    assert len(everything) == 2
+
+
+def test_windows_now_playing_empty(monkeypatch):
+    _fake_smtc(monkeypatch, b"[]")
+    result = live_mixing.windows_now_playing()
+    assert result.empty
+    assert list(result.columns) == ["source", "status", "artist", "title", "album"]
+
+
+def test_windows_now_playing_powershell_failure_raises(monkeypatch):
+    _fake_smtc(monkeypatch, b"", returncode=1, stderr=b"boom")
+    with pytest.raises(RuntimeError, match="boom"):
+        live_mixing.windows_now_playing()
 
 
 def _set_playcount(db_path, track_id, playcount):

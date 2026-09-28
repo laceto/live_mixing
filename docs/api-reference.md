@@ -46,6 +46,12 @@ re-embedding tracks already indexed.
 - `current_track(db_path=DEFAULT_DB_PATH)` — the single most-recently-played track (by
   `last_played`). Returns a DataFrame with 0 or 1 rows (empty if no track has ever been played).
   Same query pattern used by external now-playing pollers (e.g. unbox's DJUCED integration).
+- `windows_now_playing(playing_only=True, timeout=15)` — what the Windows media player(s) are
+  playing, read from the system media transport controls (SMTC) via `powershell.exe` (no extra
+  dependency). Returns a DataFrame with columns `source`, `status`, `artist`, `title`, `album`, one
+  row per media session (Media Player, Edge tabs, Spotify...); `playing_only=True` keeps only
+  `Playing` rows. Not DJUCED-specific — use `current_track` for DJUCED. Raises `RuntimeError` off
+  Windows or if the PowerShell query fails.
 
 ## Session reconstruction (see `docs/architecture.md` for the heuristic reasoning)
 

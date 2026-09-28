@@ -1,5 +1,9 @@
+import base64
+import json
 import re
 import sqlite3
+import subprocess
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -344,6 +348,69 @@ def current_track(db_path=DEFAULT_DB_PATH):
             LIMIT 1
         """,
     )
+
+
+_SMTC_SCRIPT = r"""
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+Add-Type -AssemblyName System.Runtime.WindowsRuntime
+$null = [Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager,Windows.Media.Control,ContentType=WindowsRuntime]
+$asTask = ([System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object { $_.Name -eq 'AsTask' -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -eq 'IAsyncOperation`1' })[0]
+function Await($op, $type) { $t = $asTask.MakeGenericMethod($type).Invoke($null, @($op)); $t.Wait(-1) | Out-Null; $t.Result }
+$mgr = Await ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager]::RequestAsync()) ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionManager])
+$rows = @()
+foreach ($s in $mgr.GetSessions()) {
+    $p = Await ($s.TryGetMediaPropertiesAsync()) ([Windows.Media.Control.GlobalSystemMediaTransportControlsSessionMediaProperties])
+    $rows += [pscustomobject]@{
+        source = $s.SourceAppUserModelId
+        status = [string]$s.GetPlaybackInfo().PlaybackStatus
+        artist = $p.Artist
+        title  = $p.Title
+        album  = $p.AlbumTitle
+    }
+}
+ConvertTo-Json -InputObject @($rows) -Compress
+"""
+
+
+def windows_now_playing(playing_only=True, timeout=15):
+    """Return what Windows' media player(s) are playing right now.
+
+    Queries the Windows system media transport controls (SMTC) — the same session list behind the
+    volume flyout / lock-screen media widget — via Windows PowerShell, so it needs no extra Python
+    dependency. It sees any app that publishes to SMTC (Media Player, Edge/Chrome tabs, Spotify...),
+    not DJUCED's own decks; for those use `current_track`.
+
+    Args:
+        playing_only: if True (default), keep only sessions whose status is "Playing" (drops paused
+            or stopped sessions).
+        timeout: seconds to wait for the PowerShell query before giving up.
+
+    Returns:
+        pandas.DataFrame, one row per media session, with columns source (app id), status
+        (Playing/Paused/Stopped/...), artist, title, album. Empty if nothing matches.
+
+    Raises:
+        RuntimeError: when not running on Windows.
+    """
+    if sys.platform != "win32":
+        raise RuntimeError("windows_now_playing requires Windows (SMTC media sessions)")
+
+    encoded = base64.b64encode(_SMTC_SCRIPT.encode("utf-16-le")).decode("ascii")
+    proc = subprocess.run(
+        ["powershell.exe", "-NoProfile", "-NonInteractive", "-EncodedCommand", encoded],
+        capture_output=True,
+        timeout=timeout,
+    )
+    if proc.returncode != 0:
+        raise RuntimeError(
+            "SMTC query failed: " + proc.stderr.decode("utf-8", errors="replace").strip()
+        )
+
+    rows = json.loads(proc.stdout.decode("utf-8-sig") or "[]")
+    df = pd.DataFrame(rows, columns=["source", "status", "artist", "title", "album"])
+    if playing_only:
+        df = df[df["status"] == "Playing"].reset_index(drop=True)
+    return df
 
 
 def list_sessions(db_path=DEFAULT_DB_PATH, gap_minutes=15):

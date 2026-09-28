@@ -20,6 +20,7 @@ from .read_djuced_db import (
     read_track_cues,
     snapshot_play_log,
     top_played_tracks,
+    windows_now_playing,
 )
 
 __all__ = [
@@ -44,4 +45,5 @@ __all__ = [
     "read_track_cues",
     "snapshot_play_log",
     "top_played_tracks",
+    "windows_now_playing",
 ]
