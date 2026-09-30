@@ -336,3 +336,24 @@ def test_create_playlist_empty_tracks_raises(tmp_path):
 
     with pytest.raises(ValueError):
         live_mixing.create_playlist("session_113", [], db_path=db_path)
+
+
+def test_format_now_playing_line_canonicalises_tags():
+    line = live_mixing.format_now_playing_line(
+        "Ricardo Villalobos", "Dexter", "minimal", "clicks & pops", "e3_mid_groove", "tool"
+    )
+    assert line == "Ricardo Villalobos,Dexter,1;Minimal;Clicks & Pops;E3_Mid_Groove;Tool"
+
+
+@pytest.mark.parametrize(
+    "tags",
+    [
+        ("Trance", "Acid", "E4_Peak_Time", "Tool"),  # unknown genre
+        ("Techno", None, "E4_Peak_Time", "Tool"),  # missing texture
+        ("Techno", "Acid", "E5", "Tool"),  # unknown energy
+        ("Techno", "Acid", "E4_Peak_Time", ""),  # missing role
+    ],
+)
+def test_format_now_playing_line_rejects_bad_tags(tags):
+    with pytest.raises(ValueError):
+        live_mixing.format_now_playing_line("Artist", "Title", *tags)

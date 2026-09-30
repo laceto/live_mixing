@@ -30,7 +30,9 @@ and never overrides variables already set.
   handles comments, `export `, quotes). Returns the names of newly set variables, never values.
 
 - `read_playlist_file(path="data/now_playing.txt")` — parses `Artist,Title,1` lines into a
-  DataFrame (`artist`, `title`); titles may contain commas.
+  DataFrame (`artist`, `title`, `genre`, `texture`, `energy`, `role`); titles may contain commas.
+  Optional `;genre;texture;energy;role` tags after the count fill the tag columns (`""` when a
+  line is untagged).
 - `analyze_playlist(tracks=None, client=None, model="gpt-4.1-mini", context=<minimal-era 2004-2012>, temperature=0.2)` —
   `tracks` is a DataFrame (`artist`, `title`) or a file path (default `data/now_playing.txt`).
   Returns a dict: `journey` (str), `set_order` (DataFrame: `phase`, `position`, `artist`, `title`,
@@ -77,6 +79,14 @@ and never overrides variables already set.
   row per media session (Media Player, Edge tabs, Spotify...); `playing_only=True` keeps only
   `Playing` rows. Not DJUCED-specific — use `current_track` for DJUCED. Raises `RuntimeError` off
   Windows or if the PowerShell query fails.
+- `TRACK_TAGS` — dict of the four required tag axes for `data/now_playing.txt` and their allowed
+  values: `genre` (House, Deep House, Tech-House, Minimal, Techno), `texture` (Clicks & Pops,
+  Organic & Percus, Soul & Funk, Dub & Deep, Acid), `energy` (E1_Aperitivo_Lounge, E2_Warmup,
+  E3_Mid_Groove, E4_Peak_Time), `role` (Tool, Vocal, Chugg/Roller, Bridge).
+- `format_now_playing_line(artist, title, genre, texture, energy, role)` — returns the tagged log
+  line `Artist,Title,1;genre;texture;energy;role`. Tags are matched case-insensitively against
+  `TRACK_TAGS` and returned in canonical spelling. Raises `ValueError` if any tag is missing or
+  unknown, or artist/title is empty.
 
 ## Session reconstruction (see `docs/architecture.md` for the heuristic reasoning)
 

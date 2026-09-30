@@ -1,5 +1,6 @@
 from .read_djuced_db import (
     DEFAULT_DB_PATH,
+    TRACK_TAGS,
     add_track_to_playlist,
     create_playlist,
     current_track,
@@ -10,6 +11,7 @@ from .read_djuced_db import (
     export_tracks_csv,
     find_missing_files,
     find_track_playlists,
+    format_now_playing_line,
     list_sessions,
     match_recording_to_session,
     read_djuced_db,
@@ -25,6 +27,7 @@ from .read_djuced_db import (
 
 __all__ = [
     "DEFAULT_DB_PATH",
+    "TRACK_TAGS",
     "add_track_to_playlist",
     "create_playlist",
     "current_track",
@@ -35,6 +38,7 @@ __all__ = [
     "export_tracks_csv",
     "find_missing_files",
     "find_track_playlists",
+    "format_now_playing_line",
     "list_sessions",
     "match_recording_to_session",
     "read_djuced_db",

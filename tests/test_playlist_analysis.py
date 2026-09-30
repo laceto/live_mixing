@@ -184,3 +184,26 @@ def test_analyze_playlist_prompt_labels_inference_and_carries_known_flag():
     assert list(result["set_order"]["known"]) == [True, False]
     schema_item = calls[0]["response_format"]["json_schema"]["schema"]["properties"]["phases"]["items"]
     assert "known" in schema_item["properties"]["tracks"]["items"]["required"]
+
+
+def test_read_playlist_file_parses_tags(tmp_path):
+    f = tmp_path / "p.txt"
+    f.write_text(
+        "Artist One,Title One,1;Deep House;Dub & Deep;E2_Warmup;Tool\n"
+        "Artist Two,Untagged,1\n",
+        encoding="utf-8",
+    )
+
+    df = pa.read_playlist_file(f)
+
+    assert list(df.columns) == ["artist", "title", "genre", "texture", "energy", "role"]
+    assert df.iloc[0].to_dict() == {
+        "artist": "Artist One",
+        "title": "Title One",
+        "genre": "Deep House",
+        "texture": "Dub & Deep",
+        "energy": "E2_Warmup",
+        "role": "Tool",
+    }
+    assert df.iloc[1]["title"] == "Untagged"
+    assert df.iloc[1]["genre"] == ""

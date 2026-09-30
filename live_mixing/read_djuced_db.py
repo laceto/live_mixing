@@ -372,6 +372,49 @@ ConvertTo-Json -InputObject @($rows) -Compress
 """
 
 
+# Tag matrix required on every line logged to data/now_playing.txt (see format_now_playing_line).
+# Four complementary axes; each logged track gets exactly one value per axis.
+TRACK_TAGS = {
+    # Genre / sub-genre — the musical skeleton of the track.
+    "genre": ("House", "Deep House", "Tech-House", "Minimal", "Techno"),
+    # Texture & vibe — how it sounds, regardless of genre.
+    "texture": ("Clicks & Pops", "Organic & Percus", "Soul & Funk", "Dub & Deep", "Acid"),
+    # Energy level — when to drop it on the dancefloor.
+    "energy": ("E1_Aperitivo_Lounge", "E2_Warmup", "E3_Mid_Groove", "E4_Peak_Time"),
+    # DJ tool / role — how to use it against the other deck.
+    "role": ("Tool", "Vocal", "Chugg/Roller", "Bridge"),
+}
+
+
+def format_now_playing_line(artist, title, genre, texture, energy, role):
+    """Build one tagged `data/now_playing.txt` line: `Artist,Title,1;genre;texture;energy;role`.
+
+    All four tags are required and must be one of the values in `TRACK_TAGS` (matched
+    case-insensitively, returned in canonical spelling). Tags follow the `,1` count after `;` so
+    older untagged `Artist,Title,1` lines stay readable by the same parser.
+
+    Returns:
+        str — the line, without a trailing newline.
+
+    Raises:
+        ValueError: if a tag is missing or not in `TRACK_TAGS`, or artist/title is empty.
+    """
+    if not str(artist).strip() or not str(title).strip():
+        raise ValueError("artist and title are required")
+    given = {"genre": genre, "texture": texture, "energy": energy, "role": role}
+    canonical = []
+    for axis, value in given.items():
+        allowed = TRACK_TAGS[axis]
+        match = next(
+            (a for a in allowed if value is not None and a.lower() == str(value).strip().lower()),
+            None,
+        )
+        if match is None:
+            raise ValueError(f"{axis} tag {value!r} is not one of {list(allowed)}")
+        canonical.append(match)
+    return f"{str(artist).strip()},{str(title).strip()},1;" + ";".join(canonical)
+
+
 def windows_now_playing(playing_only=True, timeout=15):
     """Return what Windows' media player(s) are playing right now.
 
