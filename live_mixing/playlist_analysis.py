@@ -33,7 +33,7 @@ DEFAULT_CONTEXT = (
     "techno, minimal and tech house from the minimal era (roughly 2004-2012)"
 )
 PHASES = ("warm_up", "building", "peak", "breakdown")
-TAG_COLUMNS = ("genre", "texture", "energy", "role")
+TAG_COLUMNS = ("genre", "texture", "energy", "role", "context")
 
 _SYSTEM_PROMPT = (
     "You are an experienced club DJ and music historian working in the field of {context}. You "
@@ -102,7 +102,7 @@ _RESPONSE_SCHEMA = {
 def read_playlist_file(path=DEFAULT_PLAYLIST_PATH):
     """Read an `Artist,Title,1` text file into a DataFrame.
 
-    Each line is `artist,title,<count>`, optionally followed by `;genre;texture;energy;role` tags
+    Each line is `artist,title,<count>`, optionally followed by `;genre;texture;energy;role;context` tags
     (see `live_mixing.format_now_playing_line`). The artist ends at the first comma and the
     trailing `,<integer>` is stripped, so titles may themselves contain commas. Blank lines are
     skipped; a line with no comma is skipped as unparseable.
@@ -111,7 +111,8 @@ def read_playlist_file(path=DEFAULT_PLAYLIST_PATH):
         path: text file to read (default data/now_playing.txt).
 
     Returns:
-        pandas.DataFrame with columns artist, title, genre, texture, energy, role (file order,
+        pandas.DataFrame with columns artist, title, genre, texture, energy, role, context (file
+        order,
         duplicates kept). Tag columns are "" on untagged lines.
 
     Raises:

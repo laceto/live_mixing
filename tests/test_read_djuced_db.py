@@ -340,18 +340,27 @@ def test_create_playlist_empty_tracks_raises(tmp_path):
 
 def test_format_now_playing_line_canonicalises_tags():
     line = live_mixing.format_now_playing_line(
-        "Ricardo Villalobos", "Dexter", "minimal", "clicks & pops", "e3_mid_groove", "tool"
+        "Ricardo Villalobos",
+        "Dexter",
+        "minimal",
+        "clicks & pops",
+        "e3_mid_groove",
+        "tool",
+        "ctx_afterhour",
     )
-    assert line == "Ricardo Villalobos,Dexter,1;Minimal;Clicks & Pops;E3_Mid_Groove;Tool"
+    assert line == (
+        "Ricardo Villalobos,Dexter,1;Minimal;Clicks & Pops;E3_Mid_Groove;Tool;Ctx_Afterhour"
+    )
 
 
 @pytest.mark.parametrize(
     "tags",
     [
-        ("Trance", "Acid", "E4_Peak_Time", "Tool"),  # unknown genre
-        ("Techno", None, "E4_Peak_Time", "Tool"),  # missing texture
-        ("Techno", "Acid", "E5", "Tool"),  # unknown energy
-        ("Techno", "Acid", "E4_Peak_Time", ""),  # missing role
+        ("Trance", "Acid", "E4_Peak_Time", "Tool", "Ctx_Clubbing"),  # unknown genre
+        ("Techno", None, "E4_Peak_Time", "Tool", "Ctx_Clubbing"),  # missing texture
+        ("Techno", "Acid", "E5", "Tool", "Ctx_Clubbing"),  # unknown energy
+        ("Techno", "Acid", "E4_Peak_Time", "", "Ctx_Clubbing"),  # missing role
+        ("Techno", "Acid", "E4_Peak_Time", "Tool", "Ctx_Rave"),  # unknown context
     ],
 )
 def test_format_now_playing_line_rejects_bad_tags(tags):

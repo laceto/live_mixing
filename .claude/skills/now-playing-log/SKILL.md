@@ -1,6 +1,6 @@
 ---
 name: now-playing-log
-description: "Append the track(s) the Windows media player is currently playing to data/now_playing.txt in the live_mixing repo, as `Artist,Title,1;Genre;Texture;Energy;Role` lines — all four tags are required — skipping duplicates. Uses live_mixing.windows_now_playing() (Windows SMTC) and live_mixing.format_now_playing_line(). Use when asked to add/log/save what Windows is playing, add the current track to now_playing.txt, or 'add it to the file'."
+description: "Append the track(s) the Windows media player is currently playing to data/now_playing.txt in the live_mixing repo, as `Artist,Title,1;Genre;Texture;Energy;Role;Context` lines — all five tags are required — skipping duplicates. Uses live_mixing.windows_now_playing() (Windows SMTC) and live_mixing.format_now_playing_line(). Use when asked to add/log/save what Windows is playing, add the current track to now_playing.txt, or 'add it to the file'."
 ---
 
 # now-playing-log — log what Windows is playing to `now_playing.txt`
@@ -10,14 +10,14 @@ to the system media controls) is **currently playing** to
 `C:/Users/l_ace/Desktop/projects/live_mixing/data/now_playing.txt`, one line per track:
 
 ```
-Artist,Title,1;Genre;Texture;Energy;Role
+Artist,Title,1;Genre;Texture;Energy;Role;Context
 ```
 
 Windows only. Not DJUCED's decks (that's `live_mixing.current_track`).
 
-## Required tags (4-axis matrix)
+## Required tags (5-axis matrix)
 
-Every logged track needs **exactly one value on each of the four axes** — never write a line with
+Every logged track needs **exactly one value on each of the five axes** — never write a line with
 a tag missing. Values are defined in `live_mixing.TRACK_TAGS`; use them verbatim.
 
 **1. Genre / Sub-Genre** — the musical skeleton ("il contenitore")
@@ -47,13 +47,26 @@ a tag missing. Values are defined in `live_mixing.TRACK_TAGS`; use them verbatim
 - `Chugg/Roller` — continuous, pushing bassline that drives the flow.
 - `Bridge` — "bridge" tracks for moving between genres (e.g. warm Deep House → drier Minimal).
 
+**5. Set Context** — the kind of set the track belongs in
+- `Ctx_Listening_Aperitivo` — listening contexts, bars, aperitivo (Solchi style): elegant groove,
+  never-invasive frequencies, fluidity and sonic detail.
+- `Ctx_Clubbing` — built for the dancefloor proper: kick, sub-bass and pressure that push people to
+  dance (Spazio Mast style).
+- `Ctx_Afterhour` — hypnotic, mental, trippy tracks for when the floor is tired but wants to stay in
+  the flow.
+
+Read **Energy relative to Context**, not in absolute terms: an `E2_Warmup` track for
+`Ctx_Clubbing` can already be too pushy for an aperitivo, so the pair (Energy, Context) is what
+tells you when to play it. Pick the context the track *belongs to*, then rate its energy within
+that context.
+
 ## Steps
 
 1. Run step A below to see what is playing (and whether it's already in the file).
-2. For each new track, choose the four tags. If you genuinely know the record, propose tags from
+2. For each new track, choose the five tags. If you genuinely know the record, propose tags from
    that knowledge and say they're your proposal; if you don't know it, say so and **ask the user**
    for the tags (offer your best guess from artist/label/remix credit, clearly marked as a guess).
-   Don't write the line until all four tags are settled — if the user gave the tags in their
+   Don't write the line until all five tags are settled — if the user gave the tags in their
    request, use those.
 3. Run step B with the chosen tags. `format_now_playing_line` raises `ValueError` on a missing or
    unknown tag — fix the tag, never bypass it by writing the line by hand.
@@ -92,8 +105,8 @@ import live_mixing as lm
 
 path = Path("C:/Users/l_ace/Desktop/projects/live_mixing/data/now_playing.txt")
 tracks = [
-    # (artist, title, genre, texture, energy, role) — fill in from step A + step 2
-    ("Artist", "Title", "Minimal", "Clicks & Pops", "E3_Mid_Groove", "Tool"),
+    # (artist, title, genre, texture, energy, role, context) — fill in from step A + step 2
+    ("Artist", "Title", "Minimal", "Clicks & Pops", "E3_Mid_Groove", "Tool", "Ctx_Clubbing"),
 ]
 
 existing = path.read_text(encoding="utf-8").splitlines() if path.exists() else []
@@ -129,4 +142,4 @@ if new_lines:
 - Duplicate check is on `Artist,Title` only, so a track is added once regardless of its tags. To
   retag an existing line, edit that line in place (only when the user asks).
 - `live_mixing.playlist_analysis.read_playlist_file` returns the tags as `genre`, `texture`,
-  `energy`, `role` columns (`""` for older untagged lines).
+  `energy`, `role`, `context` columns (`""` for older untagged lines).

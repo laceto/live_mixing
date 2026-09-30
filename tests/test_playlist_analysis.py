@@ -189,14 +189,14 @@ def test_analyze_playlist_prompt_labels_inference_and_carries_known_flag():
 def test_read_playlist_file_parses_tags(tmp_path):
     f = tmp_path / "p.txt"
     f.write_text(
-        "Artist One,Title One,1;Deep House;Dub & Deep;E2_Warmup;Tool\n"
+        "Artist One,Title One,1;Deep House;Dub & Deep;E2_Warmup;Tool;Ctx_Listening_Aperitivo\n"
         "Artist Two,Untagged,1\n",
         encoding="utf-8",
     )
 
     df = pa.read_playlist_file(f)
 
-    assert list(df.columns) == ["artist", "title", "genre", "texture", "energy", "role"]
+    assert list(df.columns) == ["artist", "title", "genre", "texture", "energy", "role", "context"]
     assert df.iloc[0].to_dict() == {
         "artist": "Artist One",
         "title": "Title One",
@@ -204,6 +204,7 @@ def test_read_playlist_file_parses_tags(tmp_path):
         "texture": "Dub & Deep",
         "energy": "E2_Warmup",
         "role": "Tool",
+        "context": "Ctx_Listening_Aperitivo",
     }
     assert df.iloc[1]["title"] == "Untagged"
     assert df.iloc[1]["genre"] == ""

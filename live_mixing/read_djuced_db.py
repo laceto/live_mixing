@@ -373,7 +373,7 @@ ConvertTo-Json -InputObject @($rows) -Compress
 
 
 # Tag matrix required on every line logged to data/now_playing.txt (see format_now_playing_line).
-# Four complementary axes; each logged track gets exactly one value per axis.
+# Five complementary axes; each logged track gets exactly one value per axis.
 TRACK_TAGS = {
     # Genre / sub-genre — the musical skeleton of the track.
     "genre": ("House", "Deep House", "Tech-House", "Minimal", "Techno"),
@@ -383,13 +383,16 @@ TRACK_TAGS = {
     "energy": ("E1_Aperitivo_Lounge", "E2_Warmup", "E3_Mid_Groove", "E4_Peak_Time"),
     # DJ tool / role — how to use it against the other deck.
     "role": ("Tool", "Vocal", "Chugg/Roller", "Bridge"),
+    # Set context — the kind of set the track suits; energy is read relative to it, so an
+    # E2_Warmup clubbing track can still be too pushy for an aperitivo.
+    "context": ("Ctx_Listening_Aperitivo", "Ctx_Clubbing", "Ctx_Afterhour"),
 }
 
 
-def format_now_playing_line(artist, title, genre, texture, energy, role):
-    """Build one tagged `data/now_playing.txt` line: `Artist,Title,1;genre;texture;energy;role`.
+def format_now_playing_line(artist, title, genre, texture, energy, role, context):
+    """Build one tagged `data/now_playing.txt` line: `Artist,Title,1;genre;texture;energy;role;context`.
 
-    All four tags are required and must be one of the values in `TRACK_TAGS` (matched
+    All five tags are required and must be one of the values in `TRACK_TAGS` (matched
     case-insensitively, returned in canonical spelling). Tags follow the `,1` count after `;` so
     older untagged `Artist,Title,1` lines stay readable by the same parser.
 
@@ -401,7 +404,13 @@ def format_now_playing_line(artist, title, genre, texture, energy, role):
     """
     if not str(artist).strip() or not str(title).strip():
         raise ValueError("artist and title are required")
-    given = {"genre": genre, "texture": texture, "energy": energy, "role": role}
+    given = {
+        "genre": genre,
+        "texture": texture,
+        "energy": energy,
+        "role": role,
+        "context": context,
+    }
     canonical = []
     for axis, value in given.items():
         allowed = TRACK_TAGS[axis]
