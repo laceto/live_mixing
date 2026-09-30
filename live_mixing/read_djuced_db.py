@@ -388,6 +388,78 @@ TRACK_TAGS = {
     "context": ("Ctx_Listening_Aperitivo", "Ctx_Clubbing", "Ctx_Afterhour"),
 }
 
+# What each TRACK_TAGS value means, in the DJ's own words: {axis: {value: description}}.
+TAG_DESCRIPTIONS = {
+    "genre": {
+        "House": "House classica, vocal, organo 909, piani, bassi caldi/funk.",
+        "Deep House": (
+            "Suoni morbidi, atmosfere sognanti, accordi minori (dub chords), ritmo rilassato."
+        ),
+        "Tech-House": "Ritmica dritta, bassi gommosi, percussioni incalzanti.",
+        "Minimal": "Tracce essenziali, spoglie, basate su piccoli elementi.",
+        "Techno": "Cassa dura, ritmo serrato, atmosfera scura/industriale.",
+    },
+    "texture": {
+        "Clicks & Pops": (
+            "Ticchettii sintetici, micro-rumori e frequenze chirurgiche alla M_nus."
+        ),
+        "Organic & Percus": (
+            'Legnetti, congas, bolle "liquide", campioni d\'acqua o percussioni reali '
+            "(stile Cecille / Cadenza / Desolat)."
+        ),
+        "Soul & Funk": (
+            "Basi staccate, campioni vocali felici, fiati, funk per la pista."
+        ),
+        "Dub & Deep": "Riverberi lunghi, eco, atmosfere sottomarine.",
+        "Acid": (
+            'Linee di sintetizzatore 303, risonanze e frequenze acute che "friggono".'
+        ),
+    },
+    "energy": {
+        "E1_Aperitivo_Lounge": (
+            "Ideale da sottofondo, senza pressione, groove morbido."
+        ),
+        "E2_Warmup": (
+            "Per far iniziare a muovere i piedi, scaldare la pista senza spingere."
+        ),
+        "E3_Mid_Groove": (
+            "Il motore centrale della serata, ritmo costante che fa ballare la gente."
+        ),
+        "E4_Peak_Time": "Momenti di massima carica, cassa presente, alta tensione.",
+    },
+    "role": {
+        "Tool": (
+            "Brani asciutti e ritmici, ideali per stare in sovrapposizione su un altro pezzo "
+            "(groove layering) per 3-4 minuti."
+        ),
+        "Vocal": (
+            "Brani con una voce chiara (parlato o cantato), fantastici per spezzare l'ipnosi "
+            "ritmica."
+        ),
+        "Chugg/Roller": (
+            'Brani con un basso "continuo" che spinge e dà tiro al flusso.'
+        ),
+        "Bridge": (
+            'Brani "ponte" perfetti per passare da un genere all\'altro (ad esempio per '
+            "passare da una Deep House calda a una Minimal più secca)."
+        ),
+    },
+    "context": {
+        "Ctx_Listening_Aperitivo": (
+            "Tracce ideali per contesti da ascolto, bar, aperitivi (stile Solchi). Qui il focus "
+            "è sul groove elegante, le frequenze mai invasive, la fluidità e il dettaglio sonoro."
+        ),
+        "Ctx_Clubbing": (
+            "Tracce concepite per la pista vera e propria, dove la cassa, il sub-basso e la "
+            "pressione sonora devono spingere la gente a ballare (stile Spazio Mast)."
+        ),
+        "Ctx_Afterhour": (
+            "Brani ipnotici, mentali, trippy, perfetti quando la pista è già stanca ma vuole "
+            "rimanere nel flusso."
+        ),
+    },
+}
+
 
 def format_now_playing_line(artist, title, genre, texture, energy, role, context):
     """Build one tagged `data/now_playing.txt` line: `Artist,Title,1;genre;texture;energy;role;context`.

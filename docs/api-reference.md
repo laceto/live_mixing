@@ -84,6 +84,9 @@ and never overrides variables already set.
   Organic & Percus, Soul & Funk, Dub & Deep, Acid), `energy` (E1_Aperitivo_Lounge, E2_Warmup,
   E3_Mid_Groove, E4_Peak_Time), `role` (Tool, Vocal, Chugg/Roller, Bridge), `context` (Ctx_Listening_Aperitivo, Ctx_Clubbing,
   Ctx_Afterhour).
+- `TAG_DESCRIPTIONS` — `{axis: {value: description}}`: what each `TRACK_TAGS` value means (the
+  DJ's original Italian wording), e.g. `TAG_DESCRIPTIONS["context"]["Ctx_Clubbing"]`. Same keys
+  as `TRACK_TAGS`.
 - `format_now_playing_line(artist, title, genre, texture, energy, role, context)` — returns the
   tagged log line `Artist,Title,1;genre;texture;energy;role;context`. Tags are matched case-insensitively against
   `TRACK_TAGS` and returned in canonical spelling. Raises `ValueError` if any tag is missing or

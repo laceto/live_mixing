@@ -366,3 +366,10 @@ def test_format_now_playing_line_canonicalises_tags():
 def test_format_now_playing_line_rejects_bad_tags(tags):
     with pytest.raises(ValueError):
         live_mixing.format_now_playing_line("Artist", "Title", *tags)
+
+
+def test_tag_descriptions_cover_every_tag():
+    assert live_mixing.TAG_DESCRIPTIONS.keys() == live_mixing.TRACK_TAGS.keys()
+    for axis, values in live_mixing.TRACK_TAGS.items():
+        assert list(live_mixing.TAG_DESCRIPTIONS[axis]) == list(values)
+        assert all(d.strip() for d in live_mixing.TAG_DESCRIPTIONS[axis].values())

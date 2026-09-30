@@ -1,5 +1,6 @@
 from .read_djuced_db import (
     DEFAULT_DB_PATH,
+    TAG_DESCRIPTIONS,
     TRACK_TAGS,
     add_track_to_playlist,
     create_playlist,
@@ -27,6 +28,7 @@ from .read_djuced_db import (
 
 __all__ = [
     "DEFAULT_DB_PATH",
+    "TAG_DESCRIPTIONS",
     "TRACK_TAGS",
     "add_track_to_playlist",
     "create_playlist",
