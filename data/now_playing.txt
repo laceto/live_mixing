@@ -1,27 +1,27 @@
-Basti Grub feat. Agent!,Walking In My Blues,1
-Francisco Allendes,Proyecto Gaia,1
-Plastikman,[MINUS116] Matador - Kingswing,1
-Minilogue e KAB,That's a Nice Way to Give Me Feedback (Heinrichs & Hirtenfellner Laughing Jackall Remix),1
-Spektre,Flux Aeterna (Subfractal Remix),1
-Rino Cerrone & Flavio Diaz,Extraordinary Wiring (Jake Childs Remix),1
-Livio & Roby e George G.,Bau Bau,1
-Giorgio Moroder e Matthias Tanzmann,Chase (Matthias Tanzmann Remix Extended),1
-Okabi,Mossi Mossi,1
-Nick Curly & Joëlla Jackson,Attention (Original Mix),1
-,2000 And One ~Burnin Dub [D'julz remix].,1
-DJ Koze,Dj Koze - Knee On Belly (PAMPA024),1
-Julian Jeweil,Don't Think (Original Mix),1
-Reboot, Carloh,Panteras (Original Mix) [CECILLE],1
-Romano Alfieri,Involution (Marco Effe Remix),1
-Vincent,Contact Research,1
-Christian Burkhardt,Nowadays,1
-Plastikman,[PLUS8124] Alberto Pascual - Truchas Rancias,1
-Livio & Roby,Roata Unu,1
-Tiger Stripes,Time For Peace (Original Mix),1
-Audiofly,Shazam (Leon Mix),1
-Veitengruber,Gimme Some Muah,1
-Kollektiv Turmstrasse,Sorry I Am Late (Extended),1
-Alex Piccini,Tom Tom,1
-,Mladen Tomic Tangas MKT 008,1
-Denis Horvat,Next Train To Paris (Original Mix).wmv,1
-Junior Garcia,Hot (Remix By Andres Gil),1
+Basti Grub feat. Agent!,Walking In My Blues,1;Tech-House;Organic & Percus;E3_Mid_Groove;Vocal;Ctx_Clubbing
+Francisco Allendes,Proyecto Gaia,1;Minimal;Organic & Percus;E3_Mid_Groove;Tool;Ctx_Clubbing
+Plastikman,[MINUS116] Matador - Kingswing,1;Minimal;Clicks & Pops;E4_Peak_Time;Chugg/Roller;Ctx_Clubbing
+Minilogue e KAB,That's a Nice Way to Give Me Feedback (Heinrichs & Hirtenfellner Laughing Jackall Remix),1;Minimal;Organic & Percus;E3_Mid_Groove;Tool;Ctx_Clubbing
+Spektre,Flux Aeterna (Subfractal Remix),1;Techno;Dub & Deep;E3_Mid_Groove;Chugg/Roller;Ctx_Afterhour
+Rino Cerrone & Flavio Diaz,Extraordinary Wiring (Jake Childs Remix),1;Techno;Clicks & Pops;E4_Peak_Time;Chugg/Roller;Ctx_Clubbing
+Livio & Roby e George G.,Bau Bau,1;Minimal;Clicks & Pops;E3_Mid_Groove;Tool;Ctx_Clubbing
+Giorgio Moroder e Matthias Tanzmann,Chase (Matthias Tanzmann Remix Extended),1;Tech-House;Soul & Funk;E4_Peak_Time;Chugg/Roller;Ctx_Clubbing
+Okabi,Mossi Mossi,1;Minimal;Organic & Percus;E3_Mid_Groove;Tool;Ctx_Clubbing
+Nick Curly & Joëlla Jackson,Attention (Original Mix),1;Tech-House;Soul & Funk;E3_Mid_Groove;Vocal;Ctx_Clubbing
+,2000 And One ~Burnin Dub [D'julz remix].,1;Tech-House;Dub & Deep;E3_Mid_Groove;Chugg/Roller;Ctx_Clubbing
+DJ Koze,Dj Koze - Knee On Belly (PAMPA024),1;Deep House;Organic & Percus;E2_Warmup;Bridge;Ctx_Listening_Aperitivo
+Julian Jeweil,Don't Think (Original Mix),1;Techno;Clicks & Pops;E4_Peak_Time;Chugg/Roller;Ctx_Clubbing
+Reboot, Carloh,Panteras (Original Mix) [CECILLE],1;Tech-House;Organic & Percus;E3_Mid_Groove;Tool;Ctx_Clubbing
+Romano Alfieri,Involution (Marco Effe Remix),1;Minimal;Clicks & Pops;E3_Mid_Groove;Tool;Ctx_Clubbing
+Vincent,Contact Research,1;Minimal;Clicks & Pops;E3_Mid_Groove;Tool;Ctx_Afterhour
+Christian Burkhardt,Nowadays,1;Minimal;Dub & Deep;E3_Mid_Groove;Chugg/Roller;Ctx_Afterhour
+Plastikman,[PLUS8124] Alberto Pascual - Truchas Rancias,1;Minimal;Clicks & Pops;E3_Mid_Groove;Tool;Ctx_Clubbing
+Livio & Roby,Roata Unu,1;Minimal;Clicks & Pops;E3_Mid_Groove;Chugg/Roller;Ctx_Afterhour
+Tiger Stripes,Time For Peace (Original Mix),1;Tech-House;Soul & Funk;E3_Mid_Groove;Chugg/Roller;Ctx_Clubbing
+Audiofly,Shazam (Leon Mix),1;Tech-House;Organic & Percus;E3_Mid_Groove;Tool;Ctx_Clubbing
+Veitengruber,Gimme Some Muah,1;Tech-House;Soul & Funk;E3_Mid_Groove;Vocal;Ctx_Clubbing
+Kollektiv Turmstrasse,Sorry I Am Late (Extended),1;Deep House;Dub & Deep;E2_Warmup;Bridge;Ctx_Listening_Aperitivo
+Alex Piccini,Tom Tom,1;Minimal;Organic & Percus;E3_Mid_Groove;Tool;Ctx_Clubbing
+,Mladen Tomic Tangas MKT 008,1;Tech-House;Organic & Percus;E3_Mid_Groove;Tool;Ctx_Clubbing
+Denis Horvat,Next Train To Paris (Original Mix).wmv,1;Deep House;Dub & Deep;E2_Warmup;Bridge;Ctx_Listening_Aperitivo
+Junior Garcia,Hot (Remix By Andres Gil),1;Tech-House;Soul & Funk;E3_Mid_Groove;Chugg/Roller;Ctx_Clubbing
