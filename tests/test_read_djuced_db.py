@@ -336,3 +336,40 @@ def test_create_playlist_empty_tracks_raises(tmp_path):
 
     with pytest.raises(ValueError):
         live_mixing.create_playlist("session_113", [], db_path=db_path)
+
+
+def test_format_now_playing_line_canonicalises_tags():
+    line = live_mixing.format_now_playing_line(
+        "Ricardo Villalobos",
+        "Dexter",
+        "minimal",
+        "clicks & pops",
+        "e3_mid_groove",
+        "tool",
+        "ctx_afterhour",
+    )
+    assert line == (
+        "Ricardo Villalobos,Dexter,1;Minimal;Clicks & Pops;E3_Mid_Groove;Tool;Ctx_Afterhour"
+    )
+
+
+@pytest.mark.parametrize(
+    "tags",
+    [
+        ("Trance", "Acid", "E4_Peak_Time", "Tool", "Ctx_Clubbing"),  # unknown genre
+        ("Techno", None, "E4_Peak_Time", "Tool", "Ctx_Clubbing"),  # missing texture
+        ("Techno", "Acid", "E5", "Tool", "Ctx_Clubbing"),  # unknown energy
+        ("Techno", "Acid", "E4_Peak_Time", "", "Ctx_Clubbing"),  # missing role
+        ("Techno", "Acid", "E4_Peak_Time", "Tool", "Ctx_Rave"),  # unknown context
+    ],
+)
+def test_format_now_playing_line_rejects_bad_tags(tags):
+    with pytest.raises(ValueError):
+        live_mixing.format_now_playing_line("Artist", "Title", *tags)
+
+
+def test_tag_descriptions_cover_every_tag():
+    assert live_mixing.TAG_DESCRIPTIONS.keys() == live_mixing.TRACK_TAGS.keys()
+    for axis, values in live_mixing.TRACK_TAGS.items():
+        assert list(live_mixing.TAG_DESCRIPTIONS[axis]) == list(values)
+        assert all(d.strip() for d in live_mixing.TAG_DESCRIPTIONS[axis].values())

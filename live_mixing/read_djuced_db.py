@@ -372,6 +372,130 @@ ConvertTo-Json -InputObject @($rows) -Compress
 """
 
 
+# Tag matrix required on every line logged to data/now_playing.txt (see format_now_playing_line).
+# Five complementary axes; each logged track gets exactly one value per axis.
+TRACK_TAGS = {
+    # Genre / sub-genre — the musical skeleton of the track.
+    "genre": ("House", "Deep House", "Tech-House", "Minimal", "Techno"),
+    # Texture & vibe — how it sounds, regardless of genre.
+    "texture": ("Clicks & Pops", "Organic & Percus", "Soul & Funk", "Dub & Deep", "Acid"),
+    # Energy level — when to drop it on the dancefloor.
+    "energy": ("E1_Aperitivo_Lounge", "E2_Warmup", "E3_Mid_Groove", "E4_Peak_Time"),
+    # DJ tool / role — how to use it against the other deck.
+    "role": ("Tool", "Vocal", "Chugg/Roller", "Bridge"),
+    # Set context — the kind of set the track suits; energy is read relative to it, so an
+    # E2_Warmup clubbing track can still be too pushy for an aperitivo.
+    "context": ("Ctx_Listening_Aperitivo", "Ctx_Clubbing", "Ctx_Afterhour"),
+}
+
+# What each TRACK_TAGS value means, in the DJ's own words: {axis: {value: description}}.
+TAG_DESCRIPTIONS = {
+    "genre": {
+        "House": "House classica, vocal, organo 909, piani, bassi caldi/funk.",
+        "Deep House": (
+            "Suoni morbidi, atmosfere sognanti, accordi minori (dub chords), ritmo rilassato."
+        ),
+        "Tech-House": "Ritmica dritta, bassi gommosi, percussioni incalzanti.",
+        "Minimal": "Tracce essenziali, spoglie, basate su piccoli elementi.",
+        "Techno": "Cassa dura, ritmo serrato, atmosfera scura/industriale.",
+    },
+    "texture": {
+        "Clicks & Pops": (
+            "Ticchettii sintetici, micro-rumori e frequenze chirurgiche alla M_nus."
+        ),
+        "Organic & Percus": (
+            'Legnetti, congas, bolle "liquide", campioni d\'acqua o percussioni reali '
+            "(stile Cecille / Cadenza / Desolat)."
+        ),
+        "Soul & Funk": (
+            "Basi staccate, campioni vocali felici, fiati, funk per la pista."
+        ),
+        "Dub & Deep": "Riverberi lunghi, eco, atmosfere sottomarine.",
+        "Acid": (
+            'Linee di sintetizzatore 303, risonanze e frequenze acute che "friggono".'
+        ),
+    },
+    "energy": {
+        "E1_Aperitivo_Lounge": (
+            "Ideale da sottofondo, senza pressione, groove morbido."
+        ),
+        "E2_Warmup": (
+            "Per far iniziare a muovere i piedi, scaldare la pista senza spingere."
+        ),
+        "E3_Mid_Groove": (
+            "Il motore centrale della serata, ritmo costante che fa ballare la gente."
+        ),
+        "E4_Peak_Time": "Momenti di massima carica, cassa presente, alta tensione.",
+    },
+    "role": {
+        "Tool": (
+            "Brani asciutti e ritmici, ideali per stare in sovrapposizione su un altro pezzo "
+            "(groove layering) per 3-4 minuti."
+        ),
+        "Vocal": (
+            "Brani con una voce chiara (parlato o cantato), fantastici per spezzare l'ipnosi "
+            "ritmica."
+        ),
+        "Chugg/Roller": (
+            'Brani con un basso "continuo" che spinge e dà tiro al flusso.'
+        ),
+        "Bridge": (
+            'Brani "ponte" perfetti per passare da un genere all\'altro (ad esempio per '
+            "passare da una Deep House calda a una Minimal più secca)."
+        ),
+    },
+    "context": {
+        "Ctx_Listening_Aperitivo": (
+            "Tracce ideali per contesti da ascolto, bar, aperitivi (stile Solchi). Qui il focus "
+            "è sul groove elegante, le frequenze mai invasive, la fluidità e il dettaglio sonoro."
+        ),
+        "Ctx_Clubbing": (
+            "Tracce concepite per la pista vera e propria, dove la cassa, il sub-basso e la "
+            "pressione sonora devono spingere la gente a ballare (stile Spazio Mast)."
+        ),
+        "Ctx_Afterhour": (
+            "Brani ipnotici, mentali, trippy, perfetti quando la pista è già stanca ma vuole "
+            "rimanere nel flusso."
+        ),
+    },
+}
+
+
+def format_now_playing_line(artist, title, genre, texture, energy, role, context):
+    """Build one tagged `data/now_playing.txt` line: `Artist,Title,1;genre;texture;energy;role;context`.
+
+    All five tags are required and must be one of the values in `TRACK_TAGS` (matched
+    case-insensitively, returned in canonical spelling). Tags follow the `,1` count after `;` so
+    older untagged `Artist,Title,1` lines stay readable by the same parser.
+
+    Returns:
+        str — the line, without a trailing newline.
+
+    Raises:
+        ValueError: if a tag is missing or not in `TRACK_TAGS`, or artist/title is empty.
+    """
+    if not str(artist).strip() or not str(title).strip():
+        raise ValueError("artist and title are required")
+    given = {
+        "genre": genre,
+        "texture": texture,
+        "energy": energy,
+        "role": role,
+        "context": context,
+    }
+    canonical = []
+    for axis, value in given.items():
+        allowed = TRACK_TAGS[axis]
+        match = next(
+            (a for a in allowed if value is not None and a.lower() == str(value).strip().lower()),
+            None,
+        )
+        if match is None:
+            raise ValueError(f"{axis} tag {value!r} is not one of {list(allowed)}")
+        canonical.append(match)
+    return f"{str(artist).strip()},{str(title).strip()},1;" + ";".join(canonical)
+
+
 def windows_now_playing(playing_only=True, timeout=15):
     """Return what Windows' media player(s) are playing right now.
 
