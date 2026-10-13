@@ -208,3 +208,16 @@ def test_read_playlist_file_parses_tags(tmp_path):
     }
     assert df.iloc[1]["title"] == "Untagged"
     assert df.iloc[1]["genre"] == ""
+
+
+def test_read_playlist_file_keeps_multi_role_value(tmp_path):
+    f = tmp_path / "p.txt"
+    f.write_text(
+        "A,T,1;Tech-House;Organic & Percus;E4_Peak_Time;Vocal|Bridge;Ctx_Afterhour\n",
+        encoding="utf-8",
+    )
+
+    df = pa.read_playlist_file(f)
+
+    assert df.iloc[0]["role"] == "Vocal|Bridge"
+    assert df.iloc[0]["context"] == "Ctx_Afterhour"

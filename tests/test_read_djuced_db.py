@@ -353,9 +353,32 @@ def test_format_now_playing_line_canonicalises_tags():
     )
 
 
+@pytest.mark.parametrize("role", ["vocal|bridge", ["Vocal", "bridge"], "Vocal|Bridge|vocal"])
+def test_format_now_playing_line_accepts_multiple_roles(role):
+    line = live_mixing.format_now_playing_line(
+        "Artist", "Title", "Tech-House", "Organic & Percus", "E4_Peak_Time", role, "Ctx_Afterhour"
+    )
+    assert line == "Artist,Title,1;Tech-House;Organic & Percus;E4_Peak_Time;Vocal|Bridge;Ctx_Afterhour"
+
+
+def test_format_now_playing_line_accepts_multiple_textures():
+    line = live_mixing.format_now_playing_line(
+        "Artist", "Title", "House", "soul & funk|Organic & Percus", "E3_Mid_Groove", "Bridge|Vocal",
+        "Ctx_Listening_Aperitivo",
+    )
+    assert line == (
+        "Artist,Title,1;House;Soul & Funk|Organic & Percus;E3_Mid_Groove;Bridge|Vocal;"
+        "Ctx_Listening_Aperitivo"
+    )
+
+
 @pytest.mark.parametrize(
     "tags",
     [
+        ("Techno", "Acid|Nope", "E4_Peak_Time", "Tool", "Ctx_Clubbing"),  # one bad texture among several
+        ("Techno", "Acid", "E4_Peak_Time", "Tool|Nope", "Ctx_Clubbing"),  # one bad role among several
+        ("Techno", "Acid", "E4_Peak_Time", [], "Ctx_Clubbing"),  # empty role list
+        ("Techno", "Acid", "E4_Peak_Time|E3_Mid_Groove", "Tool", "Ctx_Clubbing"),  # energy is single
         ("Trance", "Acid", "E4_Peak_Time", "Tool", "Ctx_Clubbing"),  # unknown genre
         ("Techno", None, "E4_Peak_Time", "Tool", "Ctx_Clubbing"),  # missing texture
         ("Techno", "Acid", "E5", "Tool", "Ctx_Clubbing"),  # unknown energy

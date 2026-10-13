@@ -20,6 +20,11 @@ every function).
   never something a user placed, and the large majority of rows in this table (91% in this
   package's own library: 9,598 of 10,542). `read_track_cues()` filters to `cuenumber < 1000` by
   default — don't query this table directly without that filter, or "cues" will mostly be noise.
+  `isSavedLoop` (0/1) is inferred from data, not documented upstream: `1` marks a pad saved as a
+  loop (jump to `cuepos`, loop `loopLength` beats); `0` is a plain hot cue. `loopLength > 0` alone
+  does **not** mean a loop — DJUCED seems to keep the last-used loop size on plain hot cues too.
+  In this package's library (1,126 real cues): 1,089 have `loopLength` 0; 34 have a length but
+  `isSavedLoop` 0; only 3 are saved loops (all 8 beats). Test `isSavedLoop`, not `loopLength`.
 - **`trackBeats`** — beatgrid data per track. `timesignature` is unreliable — don't build logic on
   it (checked against this package's real data: only ~53% of rows are `0`, the rest are
   large/garbage-looking values with no discernible pattern).

@@ -17,8 +17,9 @@ Windows only. Not DJUCED's decks (that's `live_mixing.current_track`).
 
 ## Required tags (5-axis matrix)
 
-Every logged track needs **exactly one value on each of the five axes** — never write a line with
-a tag missing. Values are defined in `live_mixing.TRACK_TAGS`; use them verbatim. The original
+Every logged track needs **exactly one value on each of the five axes** — except **Texture** and
+**Role**, which can take several (`live_mixing.MULTI_VALUE_AXES`): pass a list or `"Vocal|Bridge"` and the line
+stores them joined with `|`. Never write a line with a tag missing. Values are defined in `live_mixing.TRACK_TAGS`; use them verbatim. The original
 (Italian) meaning of each value is in `live_mixing.TAG_DESCRIPTIONS[axis][value]` — the
 authoritative definition when choosing a tag.
 

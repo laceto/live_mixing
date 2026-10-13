@@ -388,6 +388,9 @@ TRACK_TAGS = {
     "context": ("Ctx_Listening_Aperitivo", "Ctx_Clubbing", "Ctx_Afterhour"),
 }
 
+# Axes where a track may carry several values, joined with "|" in the log line (e.g. Vocal|Bridge).
+MULTI_VALUE_AXES = ("texture", "role")
+
 # What each TRACK_TAGS value means, in the DJ's own words: {axis: {value: description}}.
 TAG_DESCRIPTIONS = {
     "genre": {
@@ -466,7 +469,9 @@ def format_now_playing_line(artist, title, genre, texture, energy, role, context
 
     All five tags are required and must be one of the values in `TRACK_TAGS` (matched
     case-insensitively, returned in canonical spelling). Tags follow the `,1` count after `;` so
-    older untagged `Artist,Title,1` lines stay readable by the same parser.
+    older untagged `Artist,Title,1` lines stay readable by the same parser. Axes in
+    `MULTI_VALUE_AXES` (texture, role) also take several values, as a list or a `"Vocal|Bridge"` string;
+    they are de-duplicated and written joined with `|`.
 
     Returns:
         str — the line, without a trailing newline.
@@ -486,13 +491,21 @@ def format_now_playing_line(artist, title, genre, texture, energy, role, context
     canonical = []
     for axis, value in given.items():
         allowed = TRACK_TAGS[axis]
-        match = next(
-            (a for a in allowed if value is not None and a.lower() == str(value).strip().lower()),
-            None,
-        )
-        if match is None:
-            raise ValueError(f"{axis} tag {value!r} is not one of {list(allowed)}")
-        canonical.append(match)
+        if axis in MULTI_VALUE_AXES:
+            values = value.split("|") if isinstance(value, str) else list(value or [None])
+        else:
+            values = [value]
+        matches = []
+        for v in values:
+            match = next(
+                (a for a in allowed if v is not None and a.lower() == str(v).strip().lower()),
+                None,
+            )
+            if match is None:
+                raise ValueError(f"{axis} tag {v!r} is not one of {list(allowed)}")
+            if match not in matches:
+                matches.append(match)
+        canonical.append("|".join(matches))
     return f"{str(artist).strip()},{str(title).strip()},1;" + ";".join(canonical)
 
 

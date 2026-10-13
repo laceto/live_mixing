@@ -32,7 +32,7 @@ and never overrides variables already set.
 - `read_playlist_file(path="data/now_playing.txt")` — parses `Artist,Title,1` lines into a
   DataFrame (`artist`, `title`, `genre`, `texture`, `energy`, `role`, `context`); titles may contain commas.
   Optional `;genre;texture;energy;role;context` tags after the count fill the tag columns (`""` when a
-  line is untagged).
+  line is untagged). A multi-value track comes back as one string, e.g. `role == "Vocal|Bridge"`.
 - `analyze_playlist(tracks=None, client=None, model="gpt-4.1-mini", context=<minimal-era 2004-2012>, temperature=0.2)` —
   `tracks` is a DataFrame (`artist`, `title`) or a file path (default `data/now_playing.txt`).
   Returns a dict: `journey` (str), `set_order` (DataFrame: `phase`, `position`, `artist`, `title`,
@@ -84,12 +84,15 @@ and never overrides variables already set.
   Organic & Percus, Soul & Funk, Dub & Deep, Acid), `energy` (E1_Aperitivo_Lounge, E2_Warmup,
   E3_Mid_Groove, E4_Peak_Time), `role` (Tool, Vocal, Chugg/Roller, Bridge), `context` (Ctx_Listening_Aperitivo, Ctx_Clubbing,
   Ctx_Afterhour).
+- `MULTI_VALUE_AXES` — tuple of axes that may carry several values on one track
+  (`("texture", "role")`); the values are joined with `|` in the log line, e.g. `Vocal|Bridge`.
 - `TAG_DESCRIPTIONS` — `{axis: {value: description}}`: what each `TRACK_TAGS` value means (the
   DJ's original Italian wording), e.g. `TAG_DESCRIPTIONS["context"]["Ctx_Clubbing"]`. Same keys
   as `TRACK_TAGS`.
 - `format_now_playing_line(artist, title, genre, texture, energy, role, context)` — returns the
   tagged log line `Artist,Title,1;genre;texture;energy;role;context`. Tags are matched case-insensitively against
-  `TRACK_TAGS` and returned in canonical spelling. Raises `ValueError` if any tag is missing or
+  `TRACK_TAGS` and returned in canonical spelling. `texture` and `role` also accept several values (a list or
+  `"Vocal|Bridge"`), de-duplicated and joined with `|`. Raises `ValueError` if any tag is missing or
   unknown, or artist/title is empty.
 
 ## Session reconstruction (see `docs/architecture.md` for the heuristic reasoning)
